@@ -41,9 +41,12 @@ class RestingPlaceBot:
                 self.places_manager.database.add_grade(place_id=place_id, grade=grade)
                 self.places_manager.scan_database_ratings()
                 self.send_message(call.message.chat.id, 'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
-            elif "cb_get_more_information_for_search" in call.data:
+            elif "cb_get_more_for_search" in call.data:
                 data = call.data.split(', ')
-                self.find_place(data[0], call.message.chat.id, data[1])
+                self.find_place(message_text=data[1],
+                                chat_id=int(call.message.chat.id),
+                                start_index=int(data[2]),
+                                user_id=int(data[3]))
             else:
                 data = call.data.split(', ')
                 places_results, length = self.places_manager.return_top_places(data[0], int(data[1]), 5)
@@ -62,36 +65,39 @@ class RestingPlaceBot:
 
         @self.bot.message_handler(commands=['stop'])
         def handle_end_message(message):
-            self.bot.send_message(message.chat.id, 'До свидания! Хорошего дня!')
+            self.send_message(message.chat.id, 'До свидания! Хорошего дня!')
 
         @self.bot.message_handler(content_types=['text'])
         def handle_find_place(message):
-            self.find_place(message.text, message.chat.id, 0)
+            self.find_place(message.text, message.chat.id, 0, message.from_user.id)
 
-    def find_place(self, message_text, chat_id, start_index):
+    def find_place(self, message_text, chat_id: int, start_index: int, user_id: int):
         mystem_for_bot = Mystem()
-        lemmas = mystem_for_bot.lemmatize(message_text.text)
-        matches = [place.find_matches(lemmas) for place in self.places_manager.places][
-                  start_index:start_index + 5]
-        sorted_matches = sorted(matches, key=lambda x: x.match_amount, reverse=True)
+        lemmas = mystem_for_bot.lemmatize(message_text)
+        matches = []
+        for place in self.places_manager.places:
+            search_result = place.find_matches(lemmas)
+            if search_result.match_amount > 0.0:
+                matches.append(search_result)
+        sorted_matches = sorted(matches, key=lambda x: x.match_amount, reverse=True)[start_index:start_index + 5]
         if sorted_matches[0].match_amount == 0:
             self.send_message(chat_id, 'Совпадения отсутствуют.')
         else:
-            max_matches = sorted_matches[0].match_amount
-            places_input = []
+            places_found = []
             for match in sorted_matches:
-                if match.match_amount < max_matches:
+                if match.match_amount == 0.0:
                     break
-                places_input.append(match.place)
-            for place in places_input:
-                self.send_message(chat_id, place.get_info(user_id=chat_id.from_user.id),
+                places_found.append(match.place)
+            for place in places_found:
+                self.send_message(chat_id, place.get_info(user_id=user_id),
                                   reply_markup=self.rate_the_place(place_id=place.id))
-                if start_index + 5 < len(places_input):
-                    self.send_message(chat_id, 'Хотите узнать еще больше мест?',
-                                      reply_markup=self.get_more_information(place.type,
-                                                                             start_index=start_index + 5))
+            if start_index + 5 < len(matches):
+                self.send_message(chat_id=chat_id, text='Хотите узнать еще больше мест?',
+                                  reply_markup=self.get_more_information_for_search(message_text=message_text,
+                                                                                    start_index=start_index + 5,
+                                                                                    user_id=user_id))
 
-    def send_message(self, chat_id, text, reply_markup=None):
+    def send_message(self, chat_id: int, text: str, reply_markup=None):
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup))
 
     @staticmethod
@@ -139,10 +145,10 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def get_more_information_for_search(message_text: str, start_index: int):
+    def get_more_information_for_search(message_text: str, start_index: int, user_id: int):
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("Показать больше", callback_data=f"cb_get_more_information_for_search, "
-                                                                         f"{message_text}, {start_index}"))
+        markup.add(InlineKeyboardButton("Показать больше", callback_data=f"cb_get_more_for_search, "
+                                                                         f"{message_text}, {start_index}, {user_id}"))
         return markup
 
     @staticmethod
