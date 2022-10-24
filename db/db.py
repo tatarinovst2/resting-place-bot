@@ -39,7 +39,7 @@ class Database:
             self.execute(f'INSERT INTO ratings (place_id) VALUES ({place_id})')
         self.execute(f'UPDATE ratings SET {col_name} = {col_name} + 1 WHERE place_id = {place_id}')
     
-     def add_to_visited(self, place_id, user_id):
+    def add_to_visited(self, place_id, user_id):
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} AND user_id = {user_id}'):
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
         self.execute(f'UPDATE visited SET is_visited = TRUE WHERE place_id = {place_id} AND user_id = {user_id}')
