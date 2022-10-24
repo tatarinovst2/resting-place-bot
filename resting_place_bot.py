@@ -41,6 +41,9 @@ class RestingPlaceBot:
                 self.places_manager.database.add_grade(place_id=place_id, grade=grade)
                 self.places_manager.scan_database_ratings()
                 self.send_message(call.message.chat.id, 'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
+            elif call.data == "cb_get_more_information_for_search":
+                self.send_message(call.message.chat.id, self.find_place(call.message, call.message.chat.id, 0),
+                                  reply_markup=self.get_more_information_for_search())
             else:
                 data = call.data.split(', ')
                 places_results, length = self.places_manager.return_top_places(data[0], int(data[1]), 5)
@@ -63,23 +66,32 @@ class RestingPlaceBot:
 
         @self.bot.message_handler(content_types=['text'])
         def handle_find_place(message):
-            mystem_for_bot = Mystem()
-            lemmas = mystem_for_bot.lemmatize(message.text)
-            matches = [place.find_matches(lemmas) for place in self.places_manager.places]
-            sorted_matches = sorted(matches, key=lambda x: x.match_amount, reverse=True)
-            if sorted_matches[0].match_amount == 0:
-                self.send_message(message.chat.id, 'Совпадения отсутствуют.')
-            else:
-                max_matches = sorted_matches[0].match_amount
-                places_input = []
-                for match in sorted_matches:
-                    if match.match_amount < max_matches:
-                        break
-                    places_input.append(match.place)
-                for place in places_input:
-                    self.send_message(message.chat.id,
-                                      place.get_info(user_id=message.from_user.id),
-                                      reply_markup=self.rate_the_place(place_id=place.id))
+            self.find_place(message.text, message.chat.id, 0)
+
+    def find_place(self, message_text, chat_id, start_index):
+        mystem_for_bot = Mystem()
+        lemmas = mystem_for_bot.lemmatize(message_text.text)
+        matches = [place.find_matches(lemmas) for place in self.places_manager.places][
+                  start_index:start_index + 5]
+        sorted_matches = sorted(matches, key=lambda x: x.match_amount, reverse=True)
+        if sorted_matches[0].match_amount == 0:
+            self.send_message(chat_id, 'Совпадения отсутствуют.')
+        else:
+            max_matches = sorted_matches[0].match_amount
+            places_input = []
+            for match in sorted_matches:
+                if match.match_amount < max_matches:
+                    break
+                places_input.append(match.place)
+            for place in places_input:
+                places_results, length = self.places_manager.return_top_places(place.type, start_index + 5, 5)
+                for new_place in places_results:
+                    self.send_message(chat_id, new_place.get_info(),
+                                        reply_markup=self.rate_the_place(place_id=place.id))
+                if start_index + 5 < length:
+                    self.send_message(chat_id, 'Хотите узнать еще больше мест?',
+                                        reply_markup=self.get_more_information(place.type,
+                                                                                     start_index=start_index + 5))
 
     def send_message(self, chat_id, text, reply_markup=None):
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup))
@@ -126,6 +138,12 @@ class RestingPlaceBot:
     def get_more_information(place_type: str, start_index: int):
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Показать больше", callback_data=f"{place_type}, {start_index}"))
+        return markup
+
+    @staticmethod
+    def get_more_information_for_search():
+        markup = InlineKeyboardMarkup(row_width=1)
+        markup.add(InlineKeyboardButton("Показать больше", callback_data="cb_get_more_information_for_search"))
         return markup
 
     @staticmethod
