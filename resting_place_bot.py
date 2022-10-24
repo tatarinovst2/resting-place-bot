@@ -84,7 +84,7 @@ class RestingPlaceBot:
                     break
                 places_input.append(match.place)
             for place in places_input:
-                self.send_message(chat_id, place.get_info(),
+                self.send_message(chat_id, place.get_info(user_id=chat_id.from_user.id),
                                   reply_markup=self.rate_the_place(place_id=place.id))
                 if start_index + 5 < len(places_input):
                     self.send_message(chat_id, 'Хотите узнать еще больше мест?',
