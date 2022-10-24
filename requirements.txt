@@ -1,0 +1,4 @@
+nltk
+pylint
+pymystem3 ==
+pyTelegramBotAPI == 4.7.0
