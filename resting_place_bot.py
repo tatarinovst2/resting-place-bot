@@ -41,9 +41,9 @@ class RestingPlaceBot:
                 self.places_manager.database.add_grade(place_id=place_id, grade=grade)
                 self.places_manager.scan_database_ratings()
                 self.send_message(call.message.chat.id, 'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
-            elif call.data == "cb_get_more_information_for_search":
-                self.send_message(call.message.chat.id, self.find_place(call.message, call.message.chat.id, 0),
-                                  reply_markup=self.get_more_information_for_search())
+            elif "cb_get_more_information_for_search" in call.data:
+                data = call.data.split(', ')
+                self.find_place(data[0], call.message.chat.id, data[1])
             else:
                 data = call.data.split(', ')
                 places_results, length = self.places_manager.return_top_places(data[0], int(data[1]), 5)
@@ -84,14 +84,12 @@ class RestingPlaceBot:
                     break
                 places_input.append(match.place)
             for place in places_input:
-                places_results, length = self.places_manager.return_top_places(place.type, start_index + 5, 5)
-                for new_place in places_results:
-                    self.send_message(chat_id, new_place.get_info(),
-                                        reply_markup=self.rate_the_place(place_id=place.id))
-                if start_index + 5 < length:
+                self.send_message(chat_id, place.get_info(),
+                                  reply_markup=self.rate_the_place(place_id=place.id))
+                if start_index + 5 < len(places_input):
                     self.send_message(chat_id, 'Хотите узнать еще больше мест?',
-                                        reply_markup=self.get_more_information(place.type,
-                                                                                     start_index=start_index + 5))
+                                      reply_markup=self.get_more_information(place.type,
+                                                                             start_index=start_index + 5))
 
     def send_message(self, chat_id, text, reply_markup=None):
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup))
@@ -141,9 +139,10 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def get_more_information_for_search():
+    def get_more_information_for_search(message_text: str, start_index: int):
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("Показать больше", callback_data="cb_get_more_information_for_search"))
+        markup.add(InlineKeyboardButton("Показать больше", callback_data=f"cb_get_more_information_for_search, "
+                                                                         f"{message_text}, {start_index}"))
         return markup
 
     @staticmethod
