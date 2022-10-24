@@ -27,5 +27,5 @@ jobs:
       - name: Lint with Pylint
         run: |
           cd ..
-          export PYTHONPATH=./programming-2022-20fpl
-          python3 -m pylint programming-2022-20fpl
+          export PYTHONPATH=./resting-place-bot
+          python3 -m pylint resting-place-bot
