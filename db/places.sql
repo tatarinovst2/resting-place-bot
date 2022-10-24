@@ -1,5 +1,7 @@
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS places;
+DROP TABLE IF EXISTS visited;
+DROP TABLE IF EXISTS favorite;
 
 CREATE TABLE places(
   id             SERIAL PRIMARY KEY,
@@ -10,6 +12,20 @@ CREATE TABLE places(
   webpage        VARCHAR(200),
   working_hours  VARCHAR(200),
   phone_number   VARCHAR(100)
+);
+
+CREATE TABLE visited(
+  visited_id  SERIAL PRIMARY KEY,
+  place_id INTEGER NOT NULL REFERENCES places(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  is_visited BOOLEAN NOT NULL DEFAULT 0
+);
+
+CREATE TABLE favorite(
+  favorite_id  SERIAL PRIMARY KEY,
+  place_id INTEGER NOT NULL REFERENCES places(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL,
+  is_in_favorite BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE ratings(
