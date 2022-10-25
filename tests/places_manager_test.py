@@ -83,5 +83,3 @@ class PlacesManagerTest(unittest.TestCase):
         expected = [self.places_example[0], self.places_example[5], self.places_example[4]]
 
         self.assertEqual(actual, expected)
-
-

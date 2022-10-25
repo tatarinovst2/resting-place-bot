@@ -9,6 +9,9 @@ from db.db import Database
 
 
 class PlacesManager:
+    """
+    Class used to load and store places
+    """
     def __init__(self):
         self.places = []
         self.database = None

@@ -1,3 +1,6 @@
+"""
+Module for storing config variables
+"""
 NAME = 'delqhd5trdpt2r'
 USER = 'wieumdsvwolsow'
 PASSWORD = 'f55cfa294ee23fc2fc1a2e5b67c1f169366b8e6781d2aa16f355ad032c4d5952'

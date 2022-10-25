@@ -6,19 +6,19 @@ from type import Type
 
 
 class PlaceCreationCheck(unittest.TestCase):
-    @classmethod
-    def setUp(cls) -> None:
-        cls.correct_arguments = [0,
+    def setUp(self) -> None:
+        self.correct_arguments = [0,
                                  'Юла',
                                  Type.type_restaurant,
                                  '1000',
                                  'Нижний Новгород, Октябрьская ул., 9Б',
                                  'https://yulapizza.vsite.biz/',
-                                 "Пн, Вт, Ср, Чт, с 12:00 до 22:00; Пт, Сб, с 12:00 до 00:00; Вс с 12:00 до 23:00",
+                                 "Пн, Вт, Ср, Чт, с 12:00 до 22:00; Пт, Сб, с 12:00 до 00:00; "
+                                 "Вс с 12:00 до 23:00",
                                  '7 (920) 299-06-96',
                                  Rating(0, 0, 0, 0, 0, 0, 1)]
-        cls.incorrect_arguments = [None, '', list(), 23, 50.0]
-        cls.testing_chat_id = 291129080
+        self.incorrect_arguments = [None, '', [], 23, 50.0]
+        self.testing_chat_id = 291129080
 
     def test_create_place_correct(self):
         """
@@ -120,6 +120,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_info_not_full(self):
+        """
+        Tests if places can be initialized with only some parameters
+        """
         place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
@@ -137,6 +140,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_info_insufficient(self):
+        """
+        Tests if place init raises exception when given insufficient information
+        """
         try:
             _ = Place(place_id=self.correct_arguments[0],
                       name='',

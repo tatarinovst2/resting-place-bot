@@ -11,6 +11,9 @@ class InsufficientPlaceInfoError(Exception):
 
 
 class Place:
+    """
+    Represents a particular place and holds information about it
+    """
     def __init__(self, place_id: int, name: str, place_type: str, average_price: str | None,
                  address: str | None, webpage: str | None, working_hours: str | None,
                  phone_number: str | None, rating: Rating | None):

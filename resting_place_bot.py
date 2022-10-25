@@ -13,6 +13,9 @@ from config.config import TOKEN
 
 
 class RestingPlaceBot:
+    """
+    Interface for bot initialization
+    """
     def __init__(self):
         self.bot = TeleBot(token=TOKEN, threaded=False)
         self.places_manager = PlacesManager()
@@ -47,34 +50,13 @@ class RestingPlaceBot:
             elif 'cb_rate_the_place' in call.data:
                 self.send_message(call.message.chat.id, 'Выберите необходимую оценку',
                                   reply_markup=self.create_buttons(
-                                      place_id=int(re.findall("\d+", call.data)[0])))
-            elif 'cb_rm_favourite' in call.data:
-                data = call.data.split(', ')
-                self.places_manager.database.remove_from_favorite(place_id=data[1],
-                                                                  user_id=call.message.chat.id)
-                self.places_manager.scan_database_user_place_infos()
-                self.send_message(call.message.chat.id, 'Место удалено из избранного.')
-            elif 'cb_add_favourite' in call.data:
-                data = call.data.split(', ')
-                self.places_manager.database.add_to_favorite(place_id=data[1],
-                                                             user_id=call.message.chat.id)
-                self.places_manager.scan_database_user_place_infos()
-                self.send_message(call.message.chat.id, 'Место добавлено в избранное.')
-            elif 'cb_rm_visited' in call.data:
-                data = call.data.split(', ')
-                self.places_manager.database.remove_from_visited(place_id=data[1],
-                                                                 user_id=call.message.chat.id)
-                self.places_manager.scan_database_user_place_infos()
-                self.send_message(call.message.chat.id, 'Место удалено из посещенных.')
-            elif 'cb_add_visited' in call.data:
-                data = call.data.split(', ')
-                self.places_manager.database.add_to_visited(place_id=data[1],
-                                                            user_id=call.message.chat.id)
-                self.places_manager.scan_database_user_place_infos()
-                self.send_message(call.message.chat.id, 'Место добавлено в посещенные.')
+                                      place_id=int(re.findall(r"\d+", call.data)[0])))
+            elif 'cb_rm_favourite' in call.data or 'cb_add_favourite' in call.data or \
+                    'cb_rm_visited' in call.data or 'cb_add_visited' in call.data:
+                self.handle_user_place_info_callback_query(call)
             elif 'cb_stars' in call.data:
-                place_id = int(re.findall("\d+", call.data)[1])
-                grade = int(re.findall("\d+", call.data)[0])
+                place_id = int(re.findall(r"\d+", call.data)[1])
+                grade = int(re.findall(r"\d+", call.data)[0])
                 self.places_manager.database.add_grade(place_id=place_id, grade=grade)
                 self.places_manager.scan_database_ratings()
                 self.send_message(call.message.chat.id,
@@ -126,6 +108,35 @@ class RestingPlaceBot:
             Handles text input to find and print searched places
             """
             self.find_place(message.text, message.chat.id, 0)
+
+    def handle_user_place_info_callback_query(self, call):
+        """
+        Contains actions linked to UserPlaceInfo
+        """
+        if 'cb_rm_favourite' in call.data:
+            data = call.data.split(', ')
+            self.places_manager.database.remove_from_favorite(place_id=data[1],
+                                                              user_id=call.message.chat.id)
+            self.places_manager.scan_database_user_place_infos()
+            self.send_message(call.message.chat.id, 'Место удалено из избранного.')
+        elif 'cb_add_favourite' in call.data:
+            data = call.data.split(', ')
+            self.places_manager.database.add_to_favorite(place_id=data[1],
+                                                         user_id=call.message.chat.id)
+            self.places_manager.scan_database_user_place_infos()
+            self.send_message(call.message.chat.id, 'Место добавлено в избранное.')
+        elif 'cb_rm_visited' in call.data:
+            data = call.data.split(', ')
+            self.places_manager.database.remove_from_visited(place_id=data[1],
+                                                             user_id=call.message.chat.id)
+            self.places_manager.scan_database_user_place_infos()
+            self.send_message(call.message.chat.id, 'Место удалено из посещенных.')
+        elif 'cb_add_visited' in call.data:
+            data = call.data.split(', ')
+            self.places_manager.database.add_to_visited(place_id=data[1],
+                                                        user_id=call.message.chat.id)
+            self.places_manager.scan_database_user_place_infos()
+            self.send_message(call.message.chat.id, 'Место добавлено в посещенные.')
 
     def find_place(self, message_text: str, chat_id: int, start_index: int):
         """
@@ -204,6 +215,9 @@ class RestingPlaceBot:
                 is_favourite=visited_place.is_favourite(user_id=call.message.chat.id)))
 
     def send_message(self, chat_id: int, text: str, reply_markup=None):
+        """
+        Sends a message and stores it in message history for testing purposes
+        """
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text,
                                                            reply_markup=reply_markup))
 
