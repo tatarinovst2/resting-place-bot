@@ -27,10 +27,10 @@ class RestingPlaceBot:
             """
             Contains actions executed as a result of buttons having been pressed
             """
-            if call.data == "cb_categories":
-                self.bot.send_message(call.message.chat.id, 'Выберите категорию',
-                                      reply_markup=self.categories_markup())
-            elif call.data == "cb_search":
+            if call.data in ('cb_categories', 'cb_food', 'cb_museums_and_theaters',
+                             'cb_festivals_and_concerts'):
+                self.handle_categories_callback_query(call)
+            if call.data == "cb_search":
                 self.bot.send_message(call.message.chat.id, 'Напишите поисковой запрос')
             elif call.data == 'cb_favourites':
                 self.find_favourite_places(call)
@@ -38,15 +38,6 @@ class RestingPlaceBot:
                 self.find_visited_places(call, was_visited=True)
             elif call.data == 'cb_unvisited':
                 self.find_visited_places(call, was_visited=False)
-            elif call.data == 'cb_food':
-                self.send_message(call.message.chat.id, 'Выберите подкатегорию',
-                                  reply_markup=self.food_markup())
-            elif call.data == 'cb_museums_and_theaters':
-                self.send_message(call.message.chat.id, 'Выберите подкатегорию',
-                                  reply_markup=self.museum_and_theater_markup())
-            elif call.data == 'cb_festivals_and_concerts':
-                self.send_message(call.message.chat.id, 'Выберите подкатегорию',
-                                  reply_markup=self.festival_and_concert_markup())
             elif 'cb_rate_the_place' in call.data:
                 self.send_message(call.message.chat.id, 'Выберите необходимую оценку',
                                   reply_markup=self.create_buttons(
@@ -137,6 +128,23 @@ class RestingPlaceBot:
                                                         user_id=call.message.chat.id)
             self.places_manager.scan_database_user_place_infos()
             self.send_message(call.message.chat.id, 'Место добавлено в посещенные.')
+
+    def handle_categories_callback_query(self, call):
+        """
+        Contains actions linked to types
+        """
+        if call.data == "cb_categories":
+            self.bot.send_message(call.message.chat.id, 'Выберите категорию',
+                                  reply_markup=self.categories_markup())
+        elif call.data == 'cb_food':
+            self.send_message(call.message.chat.id, 'Выберите подкатегорию',
+                              reply_markup=self.food_markup())
+        elif call.data == 'cb_museums_and_theaters':
+            self.send_message(call.message.chat.id, 'Выберите подкатегорию',
+                              reply_markup=self.museum_and_theater_markup())
+        elif call.data == 'cb_festivals_and_concerts':
+            self.send_message(call.message.chat.id, 'Выберите подкатегорию',
+                              reply_markup=self.festival_and_concert_markup())
 
     def find_place(self, message_text: str, chat_id: int, start_index: int):
         """

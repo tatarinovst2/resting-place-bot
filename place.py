@@ -2,24 +2,22 @@
 Module responsible for holding information about place.
 """
 from __future__ import annotations
-from dataclasses import dataclass
+
 from rating import Rating
 from search_result import SearchResult
 
 
-@dataclass
 class InsufficientPlaceInfoError(Exception):
     """
     Is raised when there is not enough information for place to be meaningful
     """
-    pass
 
 
-class Place:
+class Place:  # pylint: disable=too-many-instance-attributes
     """
     Represents a particular place and holds information about it
     """
-    def __init__(self, place_id: int, name: str, place_type: str, average_price: str | None,
+    def __init__(self, place_id: int, name: str, place_type: str, average_price: str | None,  # pylint: disable=too-many-arguments
                  address: str | None, webpage: str | None, working_hours: str | None,
                  phone_number: str | None, rating: Rating | None):
         if not isinstance(name, str) or not isinstance(place_type, str):

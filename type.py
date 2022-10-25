@@ -3,7 +3,7 @@ Type
 """
 
 
-class Type:
+class Type:  # pylint: disable=R0903
     """
     Holds places' types restaurant, cafe, bar, theater, museum, cinema, festival, concert
     """
