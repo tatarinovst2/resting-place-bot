@@ -21,6 +21,9 @@ class RestingPlaceBot:
 
         @self.bot.callback_query_handler(func=lambda call: True)
         def handle_callback_query(call):
+            """
+            Contains actions executed as a result of buttons having been pressed
+            """
             if call.data == "cb_categories":
                 self.bot.send_message(call.message.chat.id, 'Выберите категорию',
                                       reply_markup=self.categories_markup())
@@ -105,17 +108,29 @@ class RestingPlaceBot:
 
         @self.bot.message_handler(commands=['start'])
         def handle_start_message(message):
+            """
+            Sends start message to a command /start
+            """
             self.send_message(message.chat.id, "Добрый день!", reply_markup=self.start_markup())
 
         @self.bot.message_handler(commands=['stop'])
         def handle_end_message(message):
+            """
+            Sends end message to a command /stop
+            """
             self.send_message(message.chat.id, 'До свидания! Хорошего дня!')
 
         @self.bot.message_handler(content_types=['text'])
         def handle_find_place(message):
+            """
+            Handles text input to find and print searched places
+            """
             self.find_place(message.text, message.chat.id, 0)
 
-    def find_place(self, message_text, chat_id: int, start_index: int):
+    def find_place(self, message_text: str, chat_id: int, start_index: int):
+        """
+        Sends search results for a particular search query
+        """
         mystem_for_bot = Mystem()
         lemmas = mystem_for_bot.lemmatize(message_text)
         matches = []
@@ -148,6 +163,9 @@ class RestingPlaceBot:
                                       user_id=chat_id))
 
     def find_favourite_places(self, call):
+        """
+        Finds and prints favourite places
+        """
         fav_places = []
         for place in self.places_manager.places:
             if place.is_favourite(call.message.chat.id):
@@ -166,6 +184,9 @@ class RestingPlaceBot:
                                                                  user_id=call.message.chat.id)))
 
     def find_visited_places(self, call, was_visited: bool):
+        """
+        Finds and prints visited or not visited places
+        """
         visited_places = []
         for place in self.places_manager.places:
             if place.was_visited(call.message.chat.id) == was_visited:
@@ -188,6 +209,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def start_markup():
+        """
+        Provides inline buttons for the start message
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Поиск", callback_data="cb_search"),
                    InlineKeyboardButton("Категории", callback_data="cb_categories"),
@@ -198,6 +222,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def categories_markup():
+        """
+        Provides inline buttons for categories
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Еда", callback_data="cb_food"),
                    InlineKeyboardButton("Музеи и театры", callback_data="cb_museums_and_theaters"),
@@ -208,6 +235,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def food_markup():
+        """
+        Provides inline buttons for 'food' category
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Ресторан", callback_data=f'{Type.type_restaurant}, 0'),
                    InlineKeyboardButton("Кофейня", callback_data=f'{Type.type_cafe}, 0'),
@@ -216,6 +246,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def museum_and_theater_markup():
+        """
+        Provides inline buttons for 'museum and theater' category
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Музей", callback_data=f'{Type.type_museum}, 0'),
                    InlineKeyboardButton("Театр", callback_data=f'{Type.type_theater}, 0'))
@@ -223,6 +256,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def festival_and_concert_markup():
+        """
+        Provides inline buttons for 'festival and concert' category
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Фестиваль", callback_data=f'{Type.type_festival}, 0'),
                    InlineKeyboardButton("Концерт", callback_data=f'{Type.type_concert}, 0'))
@@ -230,6 +266,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def get_more_information(place_type: str, start_index: int):
+        """
+        Provides inline button that allows to show more results
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Показать больше",
                                         callback_data=f"{place_type}, {start_index}"))
@@ -237,6 +276,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def get_more_information_for_search(message_text: str, start_index: int, user_id: int):
+        """
+        provides inline button that allows to show more results when searching
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Показать больше",
                                         callback_data=f"cb_get_more_for_search, "
@@ -245,6 +287,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def place_markup(place_id: int, was_visited: bool, is_favourite: bool):
+        """
+        Provides inline buttons for actions that could be performed on places
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Оценить место",
                                         callback_data=f'cb_rate_the_place, {place_id}'))
@@ -266,6 +311,9 @@ class RestingPlaceBot:
 
     @staticmethod
     def create_buttons(place_id: int):
+        """
+        Provides inline buttons with ratings options
+        """
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("1", callback_data=f'cb_stars, {1}, {place_id}'))
         markup.add(InlineKeyboardButton("2", callback_data=f'cb_stars, {2}, {place_id}'))

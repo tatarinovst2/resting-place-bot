@@ -23,7 +23,8 @@ class DatabaseTest(unittest.TestCase):
         """
         Tests that places can be added to the database
         """
-        with open(PROJECT_ROOT / "db" / "test_places_table_creation.sql", "r") as file:
+        with open(PROJECT_ROOT / "db" / "test_places_table_creation.sql", "r",
+                  encoding="utf-8") as file:
             query = file.read()
         self.db.execute(query)
 
@@ -45,7 +46,8 @@ class DatabaseTest(unittest.TestCase):
         """
         Tests that ratings can be added to the database
         """
-        with open(PROJECT_ROOT / "db" / "test_ratings_insertion.sql", "r") as file:
+        with open(PROJECT_ROOT / "db" / "test_ratings_insertion.sql", "r",
+                  encoding="utf-8") as file:
             query = file.read()
         self.db.execute(query)
         self.db.add_grade(1, 3)

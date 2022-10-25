@@ -57,7 +57,7 @@ class Place:
 
     def was_visited(self, user_id: int):
         """
-
+        Returns a boolean that presents whether the place was visited for a particular user
         """
         if not self.user_place_infos:
             return False
@@ -66,6 +66,9 @@ class Place:
             if user_id in self.user_place_infos else False
 
     def is_favourite(self, user_id: int):
+        """
+        Returns a boolean that presents whether the place if favourite for a particular user
+        """
         if not self.user_place_infos:
             return False
 
@@ -73,6 +76,9 @@ class Place:
             if user_id in self.user_place_infos else False
 
     def get_info(self, user_id: int):
+        """
+        Returns a string that holds information about the place
+        """
         info = [f'Название: {self.name}', f'Тип заведения: {self.type}']
 
         if self.is_favourite(user_id=user_id):

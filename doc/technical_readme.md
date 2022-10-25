@@ -25,22 +25,25 @@ Software solution is built on top of three components:
 |`messages_history (list)`|history of messages used for technical purposes|
 #### Methods
 
-|Method|Description|Parameters|Returns|
-|---|---|---|---|
-|`handle_callback_query`|contains actions executed as a result of buttons having been pressed|`call`: callback query, is used to identify the messages' origins|`None`|
-|`handle_start_message`|sends start message to a command _/start_|`message (Message)`: the message for which we send start response|`None`|
-|`handle_end_message`|sends end message to a command _/stop_|`message (Message)`: the message for which we send end response|`None`|
-|`handle_find_place`|sends search results for a particular search query|`message (Message)`: the message which is used as a search query|`None`|
-|`send_message`|sends a message and stores it in message history for testing purposes|`chat_id (int)`: chat's identifier </br> `text (str)`: message text </br> `reply_markup (func)`: markup that allows to create inline buttons|`None`|
-|`start_markup`|provides inline buttons for the start message| |`InlineKeyboardMarkup`|
-|`categories_markup`|provides inline buttons for categories| |`InlineKeyboardMarkup`|
-|`food_markup`|provides inline buttons for 'food' category| |`InlineKeyboardMarkup`|
-|`museum_and_theater_markup`|provides inline buttons for 'museum and theater' category| |`InlineKeyboardMarkup`|
-|`festival_and_concert_markup`|provides inline buttons for 'festival and concert' category| |`InlineKeyboardMarkup`|
-|`get_more_information`|provides inline button that allows to show more results|`place_type (str)`: place's type, such as _restaurant_, _cinema_ or else </br> `start_index (int)`: index from which top results are shown|`None`|
-|`rate_the_place`|provides inline button that allows rate the place|`place_id (int)`: place's identifier|`None`|
-|`create_buttons`|provides inline buttons with ratings options|`place_id (int)`: place's identifier|`None`|
-|`find_favourite_places`| finds and prints favourite places|`call`: callback query, is used to identify the messages' origins|`None`|
+| Method                            | Description                                                            | Parameters                                                                                                                                                                             |Returns|
+|-----------------------------------|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
+| `handle_callback_query`           | contains actions executed as a result of buttons having been pressed   | `call`: callback query, is used to identify the messages' origins                                                                                                                      |`None`|
+| `handle_start_message`            | sends start message to a command _/start_                              | `message (Message)`: the message for which we send start response                                                                                                                      |`None`|
+| `handle_end_message`              | sends end message to a command _/stop_                                 | `message (Message)`: the message for which we send end response                                                                                                                        |`None`|
+| `handle_find_place`               | handles text input to find and print searched places                   | `message (Message)`: the message which is used as a search query                                                                                                                       |`None`|
+| `find_place`                      | sends search results for a particular search query                     | `message_text (str)`: message's text </br> `start_index (int)`: index from which top results are shown </br>, `user_id`: user's identifier                                             |`None`|
+| `send_message`                    | sends a message and stores it in message history for testing purposes  | `chat_id (int)`: chat's identifier </br> `text (str)`: message text </br> `reply_markup (func)`: markup that allows to create inline buttons                                           |`None`|
+| `start_markup`                    | provides inline buttons for the start message                          |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `categories_markup`               | provides inline buttons for categories                                 |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `food_markup`                     | provides inline buttons for 'food' category                            |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `museum_and_theater_markup`       | provides inline buttons for 'museum and theater' category              |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `festival_and_concert_markup`     | provides inline buttons for 'festival and concert' category            |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `get_more_information`            | provides inline button that allows to show more results                | `place_type (str)`: place's type, such as _restaurant_, _cinema_ or else </br> `start_index (int)`: index from which top results are shown                                             |`None`|
+| `get_more_information_for_search` | provides inline button that allows to show more results when searching | `message_text (str)`: message's text </br> `start_index (int)`: index from which top results are shown </br>, `user_id`: user's identifier                                             |`None`|
+| `create_buttons`                  | provides inline buttons with ratings options                           | `place_id (int)`: place's identifier                                                                                                                                                   |`InlineKeyboardMarkup`|
+| `place_markup`                    | provides inline buttons for actions that could be performed on places  | `place_id (int)`: place's identifier, `was_visited`: a boolean that represents whether the place was visited, `is_favourite`: a boolean that represents whether the place is favourite |`InlineKeyboardMarkup`|
+| `find_favourite_places`           | finds and prints favourite places                                      | `call`: callback query, is used to identify the messages' origins                                                                                                                      |`None`|
+| `find_visited_places`             | finds and prints visited or not visited places                         | `call`: callback query, is used to identify the messages' origins, `was_visited`: a boolean that represents whether the place was visited                                              |`None`|
 
 ### Сlass [`PlacesManager`](https://github.com/tatarinovst2/resting-place-bot/blob/main/places_manager.py)
 #### Description: class used to load and store places. 
