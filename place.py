@@ -2,11 +2,16 @@
 Module responsible for holding information about place.
 """
 from __future__ import annotations
+from dataclasses import dataclass
 from rating import Rating
 from search_result import SearchResult
 
 
+@dataclass
 class InsufficientPlaceInfoError(Exception):
+    """
+    Is raised when there is not enough information for place to be meaningful
+    """
     pass
 
 

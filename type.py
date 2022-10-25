@@ -1,4 +1,12 @@
+"""
+Type
+"""
+
+
 class Type:
+    """
+    Holds places' types restaurant, cafe, bar, theater, museum, cinema, festival, concert
+    """
     type_restaurant = 'Ресторан'
     type_cafe = 'Кофейня'
     type_bar = 'Бар'
