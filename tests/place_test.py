@@ -1,6 +1,7 @@
 """
 PlaceCreationCheck
 """
+import logging
 import unittest
 
 from place import Place, InsufficientPlaceInfoError
@@ -76,6 +77,7 @@ class PlaceCreationCheck(unittest.TestCase):
                 self.assertEqual(type(place.average_price), str)
                 self.assertEqual(type(place.rating), Rating)
         except Exception as exception:
+            logging.exception(exception)
             self.assertEqual(type(exception), TypeError)
 
     def test_create_place_minimum(self):
@@ -164,6 +166,7 @@ class PlaceCreationCheck(unittest.TestCase):
                       rating=None)
             assert False, "Info about place is lacking!"
         except Exception as exception:
+            logging.exception(exception)
             self.assertEqual(type(exception), InsufficientPlaceInfoError)
 
 
