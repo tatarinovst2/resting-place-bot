@@ -36,21 +36,37 @@ class PlacesManager:
                     new_place.rating = rating
 
     def scan_database_user_place_infos(self):
-        try:
-            scan_query = 'SELECT * FROM user_place_infos'
-            data = self.database.select(scan_query)
-        except:
-            print("User_place_infos table is not yet implemented. Skip")
-            return
+        scan_visited_query = 'SELECT * FROM visited'
+        data_visited = self.database.select(scan_visited_query)
 
-        for user_place_data in data:
-            user_place_info = UserPlaceInfo(user_id=user_place_data[2],
-                                            was_visited=user_place_data[3],
-                                            is_favourite=user_place_data[4])
+        user_place_infos = {}
 
+        for visited_data in data_visited:
+            user_place_infos[(visited_data[1], visited_data[2])] = UserPlaceInfo(place_id=visited_data[1],
+                                                                                 user_id=visited_data[2],
+                                                                                 was_visited=bool(visited_data[3]),
+                                                                                 is_favourite=False)
+        scan_favourite_query = 'SELECT * FROM favorite'
+        data_favourite = self.database.select(scan_favourite_query)
+
+        for favourite_data in data_favourite:
+            if (favourite_data[1], favourite_data[2]) in user_place_infos.keys():
+                user_place_infos[(favourite_data[1], favourite_data[2])] = UserPlaceInfo(
+                    place_id=favourite_data[1],
+                    user_id=favourite_data[2],
+                    was_visited=user_place_infos[(favourite_data[1], favourite_data[2])].was_visited,
+                    is_favourite=bool(favourite_data[3]))
+            else:
+                user_place_infos[(favourite_data[1], favourite_data[2])] = UserPlaceInfo(
+                    place_id=favourite_data[1],
+                    user_id=favourite_data[2],
+                    was_visited=False,
+                    is_favourite=bool(favourite_data[3]))
+
+        for user_place_info in user_place_infos.values():
             for place in self.places:
-                if place.id == user_place_data[1]:
-                    place.user_place_infos[user_place_data[2]] = user_place_info
+                if place.id == user_place_info.place_id:
+                    place.user_place_infos[user_place_info.user_id] = user_place_info
 
     def scan_database(self):
         self.scan_database_place()

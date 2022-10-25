@@ -35,6 +35,26 @@ class RestingPlaceBot:
             elif 'cb_rate_the_place' in call.data:
                 self.send_message(call.message.chat.id, 'Выберите необходимую оценку',
                                   reply_markup=self.create_buttons(place_id=int(re.findall("\d+", call.data)[0])))
+            elif 'cb_rm_favourite' in call.data:
+                data = call.data.split(', ')
+                self.places_manager.database.remove_from_favorite(place_id=data[1], user_id=call.message.chat.id)
+                self.places_manager.scan_database_user_place_infos()
+                self.send_message(call.message.chat.id, 'Место удалено из избранного.')
+            elif 'cb_add_favourite' in call.data:
+                data = call.data.split(', ')
+                self.places_manager.database.add_to_favorite(place_id=data[1], user_id=call.message.chat.id)
+                self.places_manager.scan_database_user_place_infos()
+                self.send_message(call.message.chat.id, 'Место добавлено в избранное.')
+            elif 'cb_rm_visited' in call.data:
+                data = call.data.split(', ')
+                self.places_manager.database.remove_from_visited(place_id=data[1], user_id=call.message.chat.id)
+                self.places_manager.scan_database_user_place_infos()
+                self.send_message(call.message.chat.id, 'Место удалено из посещенных.')
+            elif 'cb_add_visited' in call.data:
+                data = call.data.split(', ')
+                self.places_manager.database.add_to_visited(place_id=data[1], user_id=call.message.chat.id)
+                self.places_manager.scan_database_user_place_infos()
+                self.send_message(call.message.chat.id, 'Место добавлено в посещенные.')
             elif 'cb_stars' in call.data:
                 place_id = int(re.findall("\d+", call.data)[1])
                 grade = int(re.findall("\d+", call.data)[0])
@@ -45,15 +65,17 @@ class RestingPlaceBot:
                 data = call.data.split(', ')
                 self.find_place(message_text=data[1],
                                 chat_id=int(call.message.chat.id),
-                                start_index=int(data[2]),
-                                user_id=int(data[3]))
+                                start_index=int(data[2]))
             else:
                 data = call.data.split(', ')
                 places_results, length = self.places_manager.return_top_places(data[0], int(data[1]), 5)
                 for place in places_results:
-                    self.send_message(call.message.chat.id, place.get_info(user_id=call.message.from_user.id),
-                                      reply_markup=self.rate_the_place(place_id=place.id))
-
+                    self.send_message(call.message.chat.id, place.get_info(user_id=call.message.chat.id),
+                                      reply_markup=self.place_markup(place_id=place.id,
+                                                                     was_visited=place.was_visited(
+                                                                         user_id=call.message.chat.id),
+                                                                     is_favourite=place.is_favourite(
+                                                                         user_id=call.message.chat.id)))
                 if int(data[1]) + 5 < length:
                     self.send_message(call.message.chat.id, 'Хотите узнать еще больше мест?',
                                       reply_markup=self.get_more_information(data[0],
@@ -69,9 +91,9 @@ class RestingPlaceBot:
 
         @self.bot.message_handler(content_types=['text'])
         def handle_find_place(message):
-            self.find_place(message.text, message.chat.id, 0, message.from_user.id)
+            self.find_place(message.text, message.chat.id, 0)
 
-    def find_place(self, message_text, chat_id: int, start_index: int, user_id: int):
+    def find_place(self, message_text, chat_id: int, start_index: int):
         mystem_for_bot = Mystem()
         lemmas = mystem_for_bot.lemmatize(message_text)
         matches = []
@@ -89,13 +111,15 @@ class RestingPlaceBot:
                     break
                 places_found.append(match.place)
             for place in places_found:
-                self.send_message(chat_id, place.get_info(user_id=user_id),
-                                  reply_markup=self.rate_the_place(place_id=place.id))
+                self.send_message(chat_id, place.get_info(user_id=chat_id),
+                                  reply_markup=self.place_markup(place_id=place.id,
+                                                                 was_visited=place.was_visited(user_id=chat_id),
+                                                                 is_favourite=place.is_favourite(user_id=chat_id)))
             if start_index + 5 < len(matches):
                 self.send_message(chat_id=chat_id, text='Хотите узнать еще больше мест?',
                                   reply_markup=self.get_more_information_for_search(message_text=message_text,
                                                                                     start_index=start_index + 5,
-                                                                                    user_id=user_id))
+                                                                                    user_id=chat_id))
 
     def send_message(self, chat_id: int, text: str, reply_markup=None):
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup))
@@ -152,9 +176,19 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def rate_the_place(place_id: int):
+    def place_markup(place_id: int, was_visited: bool, is_favourite: bool):
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Оценить место", callback_data=f'cb_rate_the_place, {place_id}'))
+
+        if was_visited:
+            markup.add(InlineKeyboardButton("Убрать из посещенных", callback_data=f'cb_rm_visited, {place_id}'))
+        else:
+            markup.add(InlineKeyboardButton("Добавить в посещенные", callback_data=f'cb_add_visited, {place_id}'))
+
+        if is_favourite:
+            markup.add(InlineKeyboardButton("Убрать из избранного", callback_data=f'cb_rm_favourite, {place_id}'))
+        else:
+            markup.add(InlineKeyboardButton("Добавить в избранное", callback_data=f'cb_add_favourite, {place_id}'))
         return markup
 
     @staticmethod
