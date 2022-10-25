@@ -29,14 +29,16 @@ class Place:
         self.user_place_infos = {}
 
     def find_matches(self, lemmas: list):
-        text = ' '.join(lemmas)
         matches_amount = 0.0
         if lemmas[0] in self.name.lower()[0:len(lemmas[0])]:
             matches_amount += 0.5
-        if self.name.lower() in text:
-            matches_amount += 1.0
-        if self.type.lower() in text:
-            matches_amount += 1.0
+        for lemma in lemmas:
+            if lemma in self.name.lower():
+                matches_amount += 1.0
+            if lemma in self.type.lower():
+                matches_amount += 1.0
+            if lemma in self.address.lower():
+                matches_amount += 0.5
         return SearchResult(self, matches_amount)
 
     def was_visited(self, user_id: int):

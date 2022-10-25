@@ -39,22 +39,22 @@ class Database:
             self.execute(f'INSERT INTO ratings (place_id) VALUES ({place_id})')
         self.execute(f'UPDATE ratings SET {col_name} = {col_name} + 1 WHERE place_id = {place_id}')
     
-    def add_to_visited(self, place_id, user_id):
+    def add_to_visited(self, place_id: int, user_id: int):
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} AND user_id = {user_id}'):
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
         self.execute(f'UPDATE visited SET is_visited = 1 WHERE place_id = {place_id} AND user_id = {user_id}')
    
-    def remove_from_visited(self, place_id, user_id):
+    def remove_from_visited(self, place_id: int, user_id: int):
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} AND user_id = {user_id}'):
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
         self.execute(f'UPDATE visited SET is_visited = 0 WHERE place_id = {place_id} AND user_id = {user_id}')
         
-    def add_to_favorite(self, place_id, user_id):
+    def add_to_favorite(self, place_id: int, user_id: int):
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} AND user_id = {user_id}'):
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
         self.execute(f'UPDATE favorite SET is_in_favorite = 1 WHERE place_id = {place_id} AND user_id = {user_id}')
    
-    def remove_from_favorite(self, place_id, user_id):
+    def remove_from_favorite(self, place_id: int, user_id: int):
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} AND user_id = {user_id}'):
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
         self.execute(f'UPDATE favorite SET is_in_favorite = 0 WHERE place_id = {place_id} AND user_id = {user_id}')

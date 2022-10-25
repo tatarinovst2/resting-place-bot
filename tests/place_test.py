@@ -18,6 +18,7 @@ class PlaceCreationCheck(unittest.TestCase):
                                  '7 (920) 299-06-96',
                                  Rating(0, 0, 0, 0, 0, 0, 1)]
         cls.incorrect_arguments = [None, '', list(), 23, 50.0]
+        cls.testing_chat_id = 291129080
 
     def test_create_place_correct(self):
         """
@@ -115,7 +116,7 @@ class PlaceCreationCheck(unittest.TestCase):
                    f'Номер телефона: {self.correct_arguments[7]}\n' \
                    f'Рейтинг: {self.correct_arguments[8].calculate_rating()}'
 
-        actual = place.get_info().strip()
+        actual = place.get_info(user_id=self.testing_chat_id).strip()
         self.assertEqual(actual, expected)
 
     def test_get_info_not_full(self):
@@ -132,7 +133,7 @@ class PlaceCreationCheck(unittest.TestCase):
         expected = f'Название: {self.correct_arguments[1]}\n' \
                    f'Тип заведения: {self.correct_arguments[2]}'
 
-        actual = place.get_info().strip()
+        actual = place.get_info(user_id=self.testing_chat_id).strip()
         self.assertEqual(actual, expected)
 
     def test_get_info_insufficient(self):
