@@ -8,16 +8,24 @@ from resting_place_bot import RestingPlaceBot
 
 class BotTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.resting_place_bot = RestingPlaceBot()
+        self.bot = RestingPlaceBot()
 
     def test_message_handler(self):
+        """
+        Tests if the bot handles the start message
+        """
         msg = self.create_text_message('/start')
-        self.resting_place_bot.bot.process_new_messages([msg])
+        self.bot.bot.process_new_messages([msg])
         time.sleep(1)
-        assert self.resting_place_bot.messages_history[len(self.resting_place_bot.messages_history) - 1].text == 'Добрый день!'
+        actual = self.bot.messages_history[len(self.bot.messages_history) - 1].text
+        expected = 'Добрый день!'
+        self.assertEqual(actual, expected)
 
     @staticmethod
     def create_text_message(text: str):
+        """
+        Creates a text message from text
+        """
         params = {'text': text}
         user = types.User(11, False, 'test')
         chat = types.Chat(291129080, 'private')

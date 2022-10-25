@@ -1,3 +1,6 @@
+"""
+Module responsible for holding information about place.
+"""
 from __future__ import annotations
 from rating import Rating
 from search_result import SearchResult
@@ -8,16 +11,24 @@ class InsufficientPlaceInfoError(Exception):
 
 
 class Place:
-    def __init__(self, id: int, name: str, place_type: str, average_price: str | None, address: str | None,
-                 webpage: str | None, working_hours: str | None, phone_number: str | None, rating: Rating | None):
-        if not isinstance(name, str) or not isinstance(place_type, str)  \
-            or not isinstance(average_price, (str, type(None))) or not isinstance(address, (str, type(None))) \
-                or not isinstance(webpage, (str, type(None))) or not isinstance(working_hours, (str, type(None))) \
-                or not isinstance(phone_number, (str, type(None))) or not isinstance(rating, (Rating, type(None))):
+    def __init__(self, place_id: int, name: str, place_type: str, average_price: str | None,
+                 address: str | None, webpage: str | None, working_hours: str | None,
+                 phone_number: str | None, rating: Rating | None):
+        if not isinstance(name, str) or not isinstance(place_type, str):
+            raise TypeError()
+        if not isinstance(average_price, (str, type(None))):
+            raise TypeError()
+        if not isinstance(address, (str, type(None))) or not isinstance(webpage, (str, type(None))):
+            raise TypeError()
+        if not isinstance(working_hours, (str, type(None))):
+            raise TypeError()
+        if not isinstance(phone_number, (str, type(None))):
+            raise TypeError()
+        if not isinstance(rating, (Rating, type(None))):
             raise TypeError()
         if not name or not place_type:
             raise InsufficientPlaceInfoError()
-        self.id = id
+        self.place_id = place_id
         self.name = name
         self.type = place_type
         self.average_price = average_price
@@ -29,6 +40,9 @@ class Place:
         self.user_place_infos = {}
 
     def find_matches(self, lemmas: list):
+        """
+        Returns a number representing how the place's information matches the search query
+        """
         matches_amount = 0.0
         if lemmas[0] in self.name.lower()[0:len(lemmas[0])]:
             matches_amount += 0.5
@@ -42,16 +56,21 @@ class Place:
         return SearchResult(self, matches_amount)
 
     def was_visited(self, user_id: int):
+        """
+
+        """
         if not self.user_place_infos:
             return False
 
-        return self.user_place_infos.get(user_id).was_visited if user_id in self.user_place_infos.keys() else False
+        return self.user_place_infos.get(user_id).was_visited \
+            if user_id in self.user_place_infos else False
 
     def is_favourite(self, user_id: int):
         if not self.user_place_infos:
             return False
 
-        return self.user_place_infos.get(user_id).is_favourite if user_id in self.user_place_infos.keys() else False
+        return self.user_place_infos.get(user_id).is_favourite \
+            if user_id in self.user_place_infos else False
 
     def get_info(self, user_id: int):
         info = [f'Название: {self.name}', f'Тип заведения: {self.type}']

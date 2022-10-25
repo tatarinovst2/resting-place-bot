@@ -24,7 +24,7 @@ class PlaceCreationCheck(unittest.TestCase):
         """
         Simple test for correct initialization.
         """
-        place = Place(id=self.correct_arguments[0],
+        place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
                       average_price=self.correct_arguments[3],
@@ -34,7 +34,7 @@ class PlaceCreationCheck(unittest.TestCase):
                       phone_number=self.correct_arguments[7],
                       rating=self.correct_arguments[8])
 
-        self.assertEqual(place.id, self.correct_arguments[0])
+        self.assertEqual(place.place_id, self.correct_arguments[0])
         self.assertEqual(place.name, self.correct_arguments[1])
         self.assertEqual(place.type, self.correct_arguments[2])
         self.assertEqual(place.average_price, self.correct_arguments[3])
@@ -52,7 +52,7 @@ class PlaceCreationCheck(unittest.TestCase):
         """
         try:
             for incorrect_argument in self.incorrect_arguments:
-                place = Place(id=incorrect_argument,
+                place = Place(place_id=incorrect_argument,
                               name=incorrect_argument,
                               place_type=incorrect_argument,
                               average_price=incorrect_argument,
@@ -61,7 +61,7 @@ class PlaceCreationCheck(unittest.TestCase):
                               working_hours=incorrect_argument,
                               phone_number=incorrect_argument,
                               rating=incorrect_argument)
-                self.assertEqual(type(place.id), int)
+                self.assertEqual(type(place.place_id), int)
                 self.assertEqual(type(place.name), str)
                 self.assertEqual(type(place.type), str)
                 self.assertEqual(type(place.address), str)
@@ -76,7 +76,7 @@ class PlaceCreationCheck(unittest.TestCase):
         """
         Test for creating places with minimal info.
         """
-        place = Place(id=self.correct_arguments[0],
+        place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
                       average_price=None,
@@ -86,7 +86,7 @@ class PlaceCreationCheck(unittest.TestCase):
                       phone_number=None,
                       rating=None)
 
-        self.assertEqual(place.id, self.correct_arguments[0])
+        self.assertEqual(place.place_id, self.correct_arguments[0])
         self.assertEqual(place.name, self.correct_arguments[1])
         self.assertEqual(place.type, self.correct_arguments[2])
         self.assertEqual(place.average_price, None)
@@ -97,7 +97,7 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(place.rating, None)
 
     def test_get_info(self):
-        place = Place(id=self.correct_arguments[0],
+        place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
                       average_price=self.correct_arguments[3],
@@ -120,7 +120,7 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_get_info_not_full(self):
-        place = Place(id=self.correct_arguments[0],
+        place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
                       average_price=None,
@@ -138,7 +138,7 @@ class PlaceCreationCheck(unittest.TestCase):
 
     def test_get_info_insufficient(self):
         try:
-            _ = Place(id=self.correct_arguments[0],
+            _ = Place(place_id=self.correct_arguments[0],
                       name='',
                       place_type='',
                       average_price=None,

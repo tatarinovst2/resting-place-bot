@@ -11,11 +11,17 @@ class PlacesManagerTest(unittest.TestCase):
         self.places_manager = PlacesManager()
 
     def test_database_scan(self):
+        """
+        Tests if the database has been scaned
+        """
         expected = True
         actual = len(self.places_manager.places) > 0
         assert expected, actual
 
     def test_return_top_results(self):
+        """
+        Tests if the results of return by category are sorted by rating
+        """
         self.places_example = [Place(0,
                                      'KFC',
                                      Type.type_restaurant,

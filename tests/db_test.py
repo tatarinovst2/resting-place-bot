@@ -9,6 +9,9 @@ class DatabaseTest(unittest.TestCase):
         self.db = Database()
 
     def test_db_connection(self):
+        """
+        Tests the connection to database
+        """
         self.db.connection = None
         self.db.connect()
 
@@ -17,6 +20,9 @@ class DatabaseTest(unittest.TestCase):
         assert expected, actual
 
     def test_places_creation(self):
+        """
+        Tests that places can be added to the database
+        """
         with open(PROJECT_ROOT / "db" / "test_places_table_creation.sql", "r") as file:
             query = file.read()
         self.db.execute(query)
@@ -36,6 +42,9 @@ class DatabaseTest(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def test_rating_insertion(self):
+        """
+        Tests that ratings can be added to the database
+        """
         with open(PROJECT_ROOT / "db" / "test_ratings_insertion.sql", "r") as file:
             query = file.read()
         self.db.execute(query)
