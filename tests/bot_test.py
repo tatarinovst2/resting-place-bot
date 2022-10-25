@@ -1,3 +1,6 @@
+"""
+BotTest
+"""
 import unittest
 import time
 
@@ -7,6 +10,9 @@ from resting_place_bot import RestingPlaceBot
 
 
 class BotTest(unittest.TestCase):
+    """
+    Test that checks the bot instance
+    """
     def setUp(self) -> None:
         self.bot = RestingPlaceBot()
 

@@ -1,3 +1,6 @@
+"""
+PlaceCreationCheck
+"""
 import unittest
 
 from place import Place, InsufficientPlaceInfoError
@@ -6,6 +9,9 @@ from type import Type
 
 
 class PlaceCreationCheck(unittest.TestCase):
+    """
+    Test that checks Place
+    """
     def setUp(self) -> None:
         self.correct_arguments = [0,
                                  'Юла',
@@ -97,6 +103,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(place.rating, None)
 
     def test_get_info(self):
+        """
+        Tests if place's information is output correctly
+        """
         place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],

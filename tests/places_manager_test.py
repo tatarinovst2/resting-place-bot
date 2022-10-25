@@ -1,3 +1,6 @@
+"""
+PlacesManagerTest
+"""
 import unittest
 
 from places_manager import PlacesManager
@@ -7,6 +10,9 @@ from type import Type
 
 
 class PlacesManagerTest(unittest.TestCase):
+    """
+    Test that checks PlacesManager
+    """
     def setUp(self) -> None:
         self.places_manager = PlacesManager()
 

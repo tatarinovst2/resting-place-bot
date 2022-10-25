@@ -65,19 +65,19 @@ class PlacesManager:
         scan_favourite_query = 'SELECT * FROM favorite'
         data_favourite = self.database.select(scan_favourite_query)
 
-        for favo_data in data_favourite:
-            if (favo_data[1], favo_data[2]) in user_place_infos.keys():
-                user_place_infos[(favo_data[1], favo_data[2])] = UserPlaceInfo(
-                    place_id=favo_data[1],
-                    user_id=favo_data[2],
-                    was_visited=user_place_infos[(favo_data[1], favo_data[2])].was_visited,
-                    is_favourite=bool(favo_data[3]))
+        for fav_data in data_favourite:
+            if (fav_data[1], fav_data[2]) in user_place_infos:
+                user_place_infos[(fav_data[1], fav_data[2])] = UserPlaceInfo(
+                    place_id=fav_data[1],
+                    user_id=fav_data[2],
+                    was_visited=user_place_infos[(fav_data[1], fav_data[2])].was_visited,
+                    is_favourite=bool(fav_data[3]))
             else:
-                user_place_infos[(favo_data[1], favo_data[2])] = UserPlaceInfo(
-                    place_id=favo_data[1],
-                    user_id=favo_data[2],
+                user_place_infos[(fav_data[1], fav_data[2])] = UserPlaceInfo(
+                    place_id=fav_data[1],
+                    user_id=fav_data[2],
                     was_visited=False,
-                    is_favourite=bool(favo_data[3]))
+                    is_favourite=bool(fav_data[3]))
 
         for user_place_info in user_place_infos.values():
             for place in self.places:
