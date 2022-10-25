@@ -15,7 +15,7 @@ Software solution is built on top of three components:
 3. [`resting_place_bot.py`](resting_place_bot.py) - a module for bot abstraction to create buttons and send messages.
 
 ## Software internal components
-### Class [`RestingPlaceBot`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/resting_place_bot.py)
+### Class [`RestingPlaceBot`](https://github.com/tatarinovst2/resting-place-bot/blob/main/resting_place_bot.py)
 #### Description: interface for bot initialization. 
 #### Fields 
 |Field|Description|
@@ -40,8 +40,9 @@ Software solution is built on top of three components:
 |`get_more_information`|provides inline button that allows to show more results|`place_type (str)`: place's type, such as _restaurant_, _cinema_ or else </br> `start_index (int)`: index from which top results are shown|`None`|
 |`rate_the_place`|provides inline button that allows rate the place|`place_id (int)`: place's identifier|`None`|
 |`create_buttons`|provides inline buttons with ratings options|`place_id (int)`: place's identifier|`None`|
+|`find_favourite_places`| finds and prints favourite places|`call`: callback query, is used to identify the messages' origins|`None`|
 
-### Сlass [`PlacesManager`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/places_manager.py)
+### Сlass [`PlacesManager`](https://github.com/tatarinovst2/resting-place-bot/blob/main/places_manager.py)
 #### Description: class used to load and store places. 
 #### Fields 
 |Field|Description|
@@ -56,8 +57,9 @@ Software solution is built on top of three components:
 |`scan_database_ratings`|scans the database for ratings and adds them to places | |`None`|
 |`scan_database`|scans the whole database by calling _scan_database_place_ and _scan_database_ratings_ | |`None`|
 |`return_top_places`|returns list of places with the highest ratings of a given type and amount of all places of the given type|`place_type (str)`: place's type, such as _restaurant_, _cinema_ or else </br> `start_index (int)`: index from which top results are shown </br> `amount (int)`: amount of results to be shown|`list` </br> `int`|
+|`scan_database_user_place_infos`| scans the database for favorite and visited places| |`None`|
 
-### Class [`Database`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/db/db.py)
+### Class [`Database`](https://github.com/tatarinovst2/resting-place-bot/blob/main/db/db.py)
 #### Description: a class that allows to connect with the database. 
 #### Fields 
 |Field|Description|
@@ -72,8 +74,12 @@ Software solution is built on top of three components:
 |`execute`|a method to execute other queries|`query (str)`: sql query to be execute|`None`|
 |`add_grade`|updates ratings with a particular grade |`place_id (int)`: place's identifier </br> `grade (int)`: a mark set by user for a particular place| `None`|
 |`__del__`| removes the connection| |`None`|
+|`add_to_visited`|marks that place was visited in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
+|`remove_from_visited`|marks that place was not visited in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
+|`add_to_favorite`|marks that place is favourite in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
+|`remove_from_favorite`|marks that place is not favourite in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
 
-### Class [`Place`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/place.py)
+### Class [`Place`](https://github.com/tatarinovst2/resting-place-bot/blob/main/place.py)
 #### Description: a class that represents a particular place and holds information about it. 
 #### Fields 
 |Field|Description|
@@ -87,14 +93,17 @@ Software solution is built on top of three components:
 |`working_hours (str or None)`| place's working hours|
 |`phone_number (str or None)`| place's phone number|
 |`rating (Rating or None)`| an object that holds information about place's rating|
+|`user_place_infos (dict)`| a dictionary that holds objects that contain information about whether place is favourite or not and whether the place was visited or not|
 
 #### Methods 
 |Method|Description|Parameters|Returns|
 |---|---|---|---|
 |`find_matches`| returns a number representing how the place's information matches the search query|`lemmas (list)`: a list of lemmatized words that were used for search| `float`|
 |`get_info`| returns a string that holds information about the place| |`string`|
+|`is_favourite`| returns a boolean that presents whether the place if favourite for a particular user|`user_id (int)`: user's identifier|`Bool`|
+|`was_visited`| returns a boolean that presents whether the place was visited for a particular user|`user_id (int)`: user's identifier|`Bool`|
 
-### Class [`Rating`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/rating.py)
+### Class [`Rating`](https://github.com/tatarinovst2/resting-place-bot/blob/main/rating.py)
 #### Description: a class that holds information about the marks of the place.
 #### Fields 
 |Field|Description|
@@ -112,12 +121,23 @@ Software solution is built on top of three components:
 |---|---|---|---|
 |`calculate_rating`|returns the calculated rating| |`float`|
 
-### Class [`Type`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/type.py)
-#### Description: a class that holds places' types _restaurant_, _cafe_, _bar_, _theater_, _museum_, _cinema_, _festival_, _concert_.
+### Class [`UserPlaceInfo`](https://github.com/tatarinovst2/resting-place-bot/blob/main/user_place_info.py)
+#### Description: a class that holds information whether the place was visited or is favourite for a particular user. 
+|Field|Description|
+|---|---|
+|`place_id(int)`| a class that represents a particular place and holds information about it|
+|`user_id(int)`| match count for the search query|
+|`was_visited(bool)`| a boolean that represents whether the place was visited|
+|`is_favourite(bool)`|a boolean that represents whether the place is favourite|
 
-### Class [`SearchResult`](https://github.com/tatarinovst2/programming-2022-20fpl/blob/main/search_result.py)
+### Class [`SearchResult`](https://github.com/tatarinovst2/resting-place-bot/blob/main/search_result.py)
 #### Description: a class that holds the place and its match count for search query.
 |Field|Description|
 |---|---|
 |`place (Place)`| a class that represents a particular place and holds information about it|
 |`match_amount (float)`| match count for the search query|
+
+### Class [`Type`](https://github.com/tatarinovst2/resting-place-bot/blob/main/type.py)
+#### Description: a class that holds places' types _restaurant_, _cafe_, _bar_, _theater_, _museum_, _cinema_, _festival_, _concert_.
+
+

@@ -23,6 +23,12 @@ class RestingPlaceBot:
                                       reply_markup=self.categories_markup())
             elif call.data == "cb_search":
                 self.bot.send_message(call.message.chat.id, 'Напишите поисковой запрос')
+            elif call.data == 'cb_favourites':
+                self.find_favourite_places(call)
+            elif call.data == 'cb_visited':
+                self.find_visited_places(call)
+            elif call.data == 'cb_unvisited':
+                self.find_unvisited_places(call)
             elif call.data == 'cb_food':
                 self.send_message(call.message.chat.id, 'Выберите подкатегорию',
                                   reply_markup=self.food_markup())
@@ -121,6 +127,54 @@ class RestingPlaceBot:
                                                                                     start_index=start_index + 5,
                                                                                     user_id=chat_id))
 
+    def find_favourite_places(self, call):
+        fav_places = []
+        for place in self.places_manager.places:
+            if place.is_favourite(call.message.chat.id):
+                fav_places.append(place)
+        if not fav_places:
+            self.send_message(call.message.chat.id, 'Отсутствуют избранные места', reply_markup=None)
+        fav_places.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        for fav_place in fav_places:
+            self.send_message(call.message.chat.id, fav_place.get_info(user_id=call.message.chat.id),
+                              reply_markup=self.place_markup(place_id=fav_place.id,
+                                                             was_visited=fav_place.was_visited(
+                                                                 user_id=call.message.chat.id),
+                                                             is_favourite=fav_place.is_favourite(
+                                                                 user_id=call.message.chat.id)))
+
+    def find_visited_places(self, call):
+        visited_places = []
+        for place in self.places_manager.places:
+            if place.was_visited(call.message.chat.id):
+                visited_places.append(place)
+        if not visited_places:
+            self.send_message(call.message.chat.id, 'Отсутствуют посещенные места', reply_markup=None)
+        visited_places.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        for visited_place in visited_places:
+            self.send_message(call.message.chat.id, visited_place.get_info(user_id=call.message.chat.id),
+                              reply_markup=self.place_markup(place_id=visited_place.id,
+                                                             was_visited=visited_place.was_visited(
+                                                                 user_id=call.message.chat.id),
+                                                             is_favourite=visited_place.is_favourite(
+                                                                 user_id=call.message.chat.id)))
+
+    def find_unvisited_places(self, call):
+        unvisited_places = []
+        for place in self.places_manager.places:
+            if not place.was_visited(call.message.chat.id):
+                unvisited_places.append(place)
+        if not unvisited_places:
+            self.send_message(call.message.chat.id, 'Отсутствуют непосещенные места', reply_markup=None)
+        unvisited_places.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        for unvisited_place in unvisited_places:
+            self.send_message(call.message.chat.id, unvisited_place.get_info(user_id=call.message.chat.id),
+                              reply_markup=self.place_markup(place_id=unvisited_place.id,
+                                                             was_visited=unvisited_place.was_visited(
+                                                                 user_id=call.message.chat.id),
+                                                             is_favourite=unvisited_place.is_favourite(
+                                                                 user_id=call.message.chat.id)))
+
     def send_message(self, chat_id: int, text: str, reply_markup=None):
         self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text, reply_markup=reply_markup))
 
@@ -128,7 +182,10 @@ class RestingPlaceBot:
     def start_markup():
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(InlineKeyboardButton("Поиск", callback_data="cb_search"),
-                   InlineKeyboardButton("Категории", callback_data="cb_categories"))
+                   InlineKeyboardButton("Категории", callback_data="cb_categories"),
+                   InlineKeyboardButton("Избранное", callback_data="cb_favourites"),
+                   InlineKeyboardButton("Посещенные места", callback_data="cb_visited"),
+                   InlineKeyboardButton("Непосещенные места", callback_data="cb_unvisited"))
         return markup
 
     @staticmethod
@@ -183,7 +240,7 @@ class RestingPlaceBot:
         if was_visited:
             markup.add(InlineKeyboardButton("Убрать из посещенных", callback_data=f'cb_rm_visited, {place_id}'))
         else:
-            markup.add(InlineKeyboardButton("Добавить в посещенные", callback_data=f'cb_add_visited, {place_id}'))
+            markup.add(InlineKeyboardButton("Отметить как посещенное", callback_data=f'cb_add_visited, {place_id}'))
 
         if is_favourite:
             markup.add(InlineKeyboardButton("Убрать из избранного", callback_data=f'cb_rm_favourite, {place_id}'))
