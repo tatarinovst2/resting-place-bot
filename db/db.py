@@ -1,9 +1,10 @@
 """
 Module for connection with database
 """
-import sqlite3
+import psycopg2
+from psycopg2.extras import DictCursor
 
-from constants import PROJECT_ROOT
+from config.config import NAME, USER, PASSWORD, HOST, PORT
 
 
 class Database:
@@ -17,7 +18,11 @@ class Database:
         Creates the connection to the SQL-database
         """
         if self.connection is None:
-            self.connection = sqlite3.connect(PROJECT_ROOT / "db" / "database.db")
+            self.connection = psycopg2.connect(dbname=NAME,
+                                               user=USER,
+                                               password=PASSWORD,
+                                               host=HOST,
+                                               port=PORT)
 
         return self.connection
 
@@ -26,15 +31,19 @@ class Database:
         Method to execute selection queries
         """
         with self.connect() as conn:
-            cursor = conn.execute(query)
-            return cursor.fetchall()
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute(query, None)
+                res = cursor.fetchall()
+
+        return res
 
     def execute(self, query: str):
         """
         Method to execute queries other than selection
         """
         with self.connect() as conn:
-            conn.executescript(query)
+            with conn.cursor(cursor_factory=DictCursor) as cursor:
+                cursor.execute(query, None)
 
     def add_grade(self, place_id: int, grade: int):
         """
@@ -103,7 +112,8 @@ class Database:
         """
         if not self.select(f'SELECT place_id FROM ratedByUser WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
-            self.execute(f'INSERT INTO ratedByUser (place_id, user_id) VALUES ({place_id}, {user_id})')
+            self.execute(f'INSERT INTO ratedByUser (place_id, user_id) VALUES ({place_id}, '
+                         f'{user_id})')
 
     def __del__(self):
         if self.connection is not None:
