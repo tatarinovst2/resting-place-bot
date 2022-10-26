@@ -37,14 +37,14 @@ class DatabaseTest(unittest.TestCase):
         scan_query = "SELECT * FROM places"
         actual = self.database.select(scan_query)
 
-        expected = [(1,
+        expected = [[1,
                      'KFC',
                      'Ресторан',
                      '350',
                      'Нижний Новгород, пр. Ленина, 33, 5-ый этаж',
                      'https://kfc.ru',
                      'С 9:00 до 21:00',
-                     None)]
+                     None]]
 
         self.assertEqual(actual, expected)
 
@@ -61,7 +61,7 @@ class DatabaseTest(unittest.TestCase):
         scan_query = "SELECT * FROM ratings"
         actual = self.database.select(scan_query)
 
-        expected = [(1, 1, 0, 0, 1, 1, 9)]
+        expected = [[1, 1, 0, 0, 1, 1, 9]]
 
         self.assertEqual(actual, expected)
 
