@@ -22,7 +22,7 @@ class PlaceCreationCheck(unittest.TestCase):
                                  "Пн, Вт, Ср, Чт, с 12:00 до 22:00; Пт, Сб, с 12:00 до 00:00; "
                                  "Вс с 12:00 до 23:00",
                                  '7 (920) 299-06-96',
-                                 Rating(0, 0, 0, 0, 0, 0, 1)]
+                                 Rating(0, 0, 0, 0, 0, 1)]
         self.incorrect_arguments = [None, '', [], 23, 50.0]
         self.testing_chat_id = 291129080
 
@@ -123,7 +123,7 @@ class PlaceCreationCheck(unittest.TestCase):
                    f'Сайт: {self.correct_arguments[5]}\n' \
                    f'Часы работы: {self.correct_arguments[6]}\n' \
                    f'Номер телефона: {self.correct_arguments[7]}\n' \
-                   f'Рейтинг: {self.correct_arguments[8].calculate_rating()}'
+                   f'Рейтинг: {round(self.correct_arguments[8].calculate_rating(), 2)}'
 
         actual = place.get_info(user_id=self.testing_chat_id).strip()
         self.assertEqual(actual, expected)

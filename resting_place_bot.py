@@ -5,7 +5,7 @@ import re
 
 from pymystem3 import Mystem
 from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
 from places_manager import PlacesManager
 from type import Type
@@ -46,12 +46,7 @@ class RestingPlaceBot:
                     'cb_rm_visited' in call.data or 'cb_add_visited' in call.data:
                 self.handle_user_place_info_callback_query(call)
             elif 'cb_stars' in call.data:
-                place_id = int(re.findall(r"\d+", call.data)[1])
-                grade = int(re.findall(r"\d+", call.data)[0])
-                self.places_manager.database.add_grade(place_id=place_id, grade=grade)
-                self.places_manager.scan_database_ratings()
-                self.send_message(call.message.chat.id,
-                                  'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
+                self.handle_settings_stars(call)
             elif "cb_get_more_for_search" in call.data:
                 data = call.data.split(', ')
                 self.find_place(message_text=data[1],
@@ -71,6 +66,8 @@ class RestingPlaceBot:
                                           was_visited=place.was_visited(
                                               user_id=call.message.chat.id),
                                           is_favourite=place.is_favourite(
+                                              user_id=call.message.chat.id),
+                                          was_rated=place.was_rated(
                                               user_id=call.message.chat.id)))
                 if int(data[1]) + 5 < length:
                     self.send_message(call.message.chat.id,
@@ -84,7 +81,9 @@ class RestingPlaceBot:
             """
             Sends start message to a command /start
             """
-            self.send_message(message.chat.id, "Добрый день!", reply_markup=self.start_markup())
+            self.send_message(message.chat.id, "Добрый день!",
+                                               reply_markup=self.to_start_markup())
+            self.send_message(message.chat.id, "Выберите опцию:", reply_markup=self.start_markup())
 
         @self.bot.message_handler(commands=['stop'])
         def handle_end_message(message):
@@ -94,11 +93,36 @@ class RestingPlaceBot:
             self.send_message(message.chat.id, 'До свидания! Хорошего дня!')
 
         @self.bot.message_handler(content_types=['text'])
-        def handle_find_place(message):
+        def handle_text(message):
             """
             Handles text input to find and print searched places
             """
-            self.find_place(message.text, message.chat.id, 0)
+            if message.text == "В начало":
+                handle_start_message(message)
+            else:
+                self.find_place(message.text, message.chat.id, 0)
+
+    def handle_settings_stars(self, call):
+        """
+        Contains actions linked to setting ratings
+        """
+        place_id = int(re.findall(r"\d+", call.data)[1])
+        grade = int(re.findall(r"\d+", call.data)[0])
+
+        for place in self.places_manager.places:
+            if place.place_id == place_id:
+                if place.was_rated(user_id=call.message.chat.id):
+                    self.send_message(call.message.chat.id,
+                                      'Вы не можете оценить место более одного раза!')
+                    return
+
+        self.places_manager.database.add_grade(place_id=place_id, grade=grade)
+        self.places_manager.database.set_as_rated(place_id=place_id,
+                                                  user_id=call.message.chat.id)
+        self.places_manager.scan_database_ratings()
+        self.places_manager.scan_database_user_place_infos()
+        self.send_message(call.message.chat.id,
+                          'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
 
     def handle_user_place_info_callback_query(self, call):
         """
@@ -173,6 +197,8 @@ class RestingPlaceBot:
                                                                  was_visited=place.was_visited(
                                                                      user_id=chat_id),
                                                                  is_favourite=place.is_favourite(
+                                                                     user_id=chat_id),
+                                                                 was_rated=place.was_rated(
                                                                      user_id=chat_id)))
             if start_index + 5 < len(matches):
                 self.send_message(chat_id=chat_id, text='Хотите узнать еще больше мест?',
@@ -200,7 +226,10 @@ class RestingPlaceBot:
                                                              was_visited=fav_place.was_visited(
                                                                  user_id=call.message.chat.id),
                                                              is_favourite=fav_place.is_favourite(
-                                                                 user_id=call.message.chat.id)))
+                                                                 user_id=call.message.chat.id),
+                                                             was_rated=fav_place.was_rated(
+                                                                 user_id=call.message.chat.id
+                                                             )))
 
     def find_visited_places(self, call, was_visited: bool):
         """
@@ -220,14 +249,17 @@ class RestingPlaceBot:
                               reply_markup=self.place_markup(
                 place_id=visited_place.place_id,
                 was_visited=visited_place.was_visited(user_id=call.message.chat.id),
-                is_favourite=visited_place.is_favourite(user_id=call.message.chat.id)))
+                is_favourite=visited_place.is_favourite(user_id=call.message.chat.id),
+                was_rated=visited_place.was_rated(user_id=call.message.chat.id)))
 
     def send_message(self, chat_id: int, text: str, reply_markup=None):
         """
         Sends a message and stores it in message history for testing purposes
         """
-        self.messages_history.append(self.bot.send_message(chat_id=chat_id, text=text,
-                                                           reply_markup=reply_markup))
+        message = self.bot.send_message(chat_id=chat_id, text=text,
+                                        reply_markup=reply_markup)
+        self.messages_history.append(message)
+        return message
 
     @staticmethod
     def start_markup():
@@ -240,6 +272,15 @@ class RestingPlaceBot:
                    InlineKeyboardButton("Избранное", callback_data="cb_favourites"),
                    InlineKeyboardButton("Посещенные места", callback_data="cb_visited"),
                    InlineKeyboardButton("Непосещенные места", callback_data="cb_unvisited"))
+        return markup
+
+    @staticmethod
+    def to_start_markup():
+        """
+        Provides To start reply
+        """
+        markup = ReplyKeyboardMarkup(True, False)
+        markup.add("В начало")
         return markup
 
     @staticmethod
@@ -308,13 +349,15 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def place_markup(place_id: int, was_visited: bool, is_favourite: bool):
+    def place_markup(place_id: int, was_visited: bool, is_favourite: bool, was_rated: bool):
         """
         Provides inline buttons for actions that could be performed on places
         """
         markup = InlineKeyboardMarkup(row_width=1)
-        markup.add(InlineKeyboardButton("Оценить место",
-                                        callback_data=f'cb_rate_the_place, {place_id}'))
+
+        if not was_rated:
+            markup.add(InlineKeyboardButton("Оценить место",
+                                            callback_data=f'cb_rate_the_place, {place_id}'))
 
         if was_visited:
             markup.add(InlineKeyboardButton("Убрать из посещенных",

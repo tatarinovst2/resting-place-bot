@@ -7,9 +7,8 @@ class Rating:  # pylint: disable=R0903
     """
     Holds information about the marks of the place
     """
-    def __init__(self, rating_id: int, place_id: int, one_stars: int, two_stars: int,  # pylint: disable=too-many-arguments
+    def __init__(self, place_id: int, one_stars: int, two_stars: int,  # pylint: disable=too-many-arguments
                  three_stars: int, four_stars: int, five_stars: int):
-        self.rating_id = rating_id
         self.place_id = place_id
         self.one_stars = one_stars
         self.two_stars = two_stars

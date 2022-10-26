@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS places;
 DROP TABLE IF EXISTS visited;
 DROP TABLE IF EXISTS favorite;
+DROP TABLE IF EXISTS ratedByUser;
 
 CREATE TABLE places(
   id             SERIAL PRIMARY KEY,
@@ -36,6 +37,12 @@ CREATE TABLE ratings(
     three_stars INTEGER NOT NULL DEFAULT 0,
     four_stars INTEGER NOT NULL DEFAULT 0,
     five_stars INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE ratedByUser(
+    rated_by_user_id SERIAL PRIMARY KEY,
+    place_id INTEGER NOT NULL REFERENCES places(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL
 );
 
 INSERT INTO places(id,name,type,average_price,address,webpage,working_hours,phone_number) VALUES (1,'Сыроварня им. Аркадия Новикова','Ресторан','1700','Нижний Новгород, пл. Октябрьская, 1','https://www.syrovarnya.com/','Пн, Вт, Ср, Чт, Вс, с 08.00 до 23.59; Пт, Сб, с 08.00 до 03.00','7(831)215-19-19');

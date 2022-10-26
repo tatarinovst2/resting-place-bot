@@ -14,4 +14,5 @@ if __name__ == "__main__":
             print('working')
             resting_place_bot.bot.polling(none_stop=True)
         except Exception as exception:  # pylint: disable=broad-except
-            time.sleep(15)
+            print(exception)
+            time.sleep(1)

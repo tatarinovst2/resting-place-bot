@@ -41,7 +41,7 @@ class PlacesManager:
         data = self.database.select(scan_query)
 
         for place_data in data:
-            rating = Rating(place_data[0], place_data[1], place_data[2], place_data[3],
+            rating = Rating(place_data[1], place_data[2], place_data[3],
                             place_data[4], place_data[5], place_data[6])
             for new_place in self.places:
                 if new_place.place_id == rating.place_id:
@@ -61,7 +61,8 @@ class PlacesManager:
                 place_id=visited_data[1],
                 user_id=visited_data[2],
                 was_visited=bool(visited_data[3]),
-                is_favourite=False)
+                is_favourite=False,
+                was_rated=False)
         scan_favourite_query = 'SELECT * FROM favorite'
         data_favourite = self.database.select(scan_favourite_query)
 
@@ -71,13 +72,34 @@ class PlacesManager:
                     place_id=fav_data[1],
                     user_id=fav_data[2],
                     was_visited=user_place_infos[(fav_data[1], fav_data[2])].was_visited,
-                    is_favourite=bool(fav_data[3]))
+                    is_favourite=bool(fav_data[3]),
+                    was_rated=False)
             else:
                 user_place_infos[(fav_data[1], fav_data[2])] = UserPlaceInfo(
                     place_id=fav_data[1],
                     user_id=fav_data[2],
                     was_visited=False,
-                    is_favourite=bool(fav_data[3]))
+                    is_favourite=bool(fav_data[3]),
+                    was_rated=False)
+
+        scan_rated_query = 'SELECT * FROM ratedByUser'
+        data_rated = self.database.select(scan_rated_query)
+
+        for fav_data in data_rated:
+            if (fav_data[1], fav_data[2]) in user_place_infos:
+                user_place_infos[(fav_data[1], fav_data[2])] = UserPlaceInfo(
+                    place_id=fav_data[1],
+                    user_id=fav_data[2],
+                    was_visited=user_place_infos[(fav_data[1], fav_data[2])].was_visited,
+                    is_favourite=user_place_infos[(fav_data[1], fav_data[2])].is_favourite,
+                    was_rated=True)
+            else:
+                user_place_infos[(fav_data[1], fav_data[2])] = UserPlaceInfo(
+                    place_id=fav_data[1],
+                    user_id=fav_data[2],
+                    was_visited=False,
+                    is_favourite=False,
+                    was_rated=True)
 
         for user_place_info in user_place_infos.values():
             for place in self.places:

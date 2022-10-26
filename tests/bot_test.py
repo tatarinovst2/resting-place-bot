@@ -23,8 +23,9 @@ class BotTest(unittest.TestCase):
         msg = self.create_text_message('/start')
         self.bot.bot.process_new_messages([msg])
         time.sleep(1)
-        actual = self.bot.messages_history[len(self.bot.messages_history) - 1].text
-        expected = 'Добрый день!'
+        actual = (self.bot.messages_history[len(self.bot.messages_history) - 2].text,
+                  self.bot.messages_history[len(self.bot.messages_history) - 1].text)
+        expected = ('Добрый день!', 'Выберите опцию:')
         self.assertEqual(actual, expected)
 
     @staticmethod

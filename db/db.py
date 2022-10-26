@@ -97,6 +97,14 @@ class Database:
         self.execute(f'UPDATE favorite SET is_in_favorite = 0 WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
+    def set_as_rated(self, place_id: int, user_id: int):
+        """
+        Marks that the place is rated by the user
+        """
+        if not self.select(f'SELECT place_id FROM ratedByUser WHERE place_id = {place_id} '
+                           f'AND user_id = {user_id}'):
+            self.execute(f'INSERT INTO ratedByUser (place_id, user_id) VALUES ({place_id}, {user_id})')
+
     def __del__(self):
         if self.connection is not None:
             print('close connection')

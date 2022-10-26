@@ -50,14 +50,14 @@ class Place:  # pylint: disable=too-many-instance-attributes
         Returns a number representing how the place's information matches the search query
         """
         matches_amount = 0.0
-        if lemmas[0] in self.name.lower()[0:len(lemmas[0])]:
+        if lemmas[0].lower() in self.name.lower()[0:len(lemmas[0])]:
             matches_amount += 0.5
         for lemma in lemmas:
-            if lemma in self.name.lower():
+            if lemma.lower() in self.name.lower():
                 matches_amount += 1.0
-            if lemma in self.type.lower():
+            if lemma.lower() in self.type.lower():
                 matches_amount += 1.0
-            if lemma in self.address.lower():
+            if lemma.lower() in self.address.lower():
                 matches_amount += 0.5
         return SearchResult(self, matches_amount)
 
@@ -79,6 +79,16 @@ class Place:  # pylint: disable=too-many-instance-attributes
             return False
 
         return self.user_place_infos.get(user_id).is_favourite \
+            if user_id in self.user_place_infos else False
+
+    def was_rated(self, user_id: int):
+        """
+        Returns a boolean that presents whether the place was rated by a particular user
+        """
+        if not self.user_place_infos:
+            return False
+
+        return self.user_place_infos.get(user_id).was_rated \
             if user_id in self.user_place_infos else False
 
     def get_info(self, user_id: int):
@@ -104,6 +114,6 @@ class Place:  # pylint: disable=too-many-instance-attributes
         if self.phone_number:
             info.append(f'Номер телефона: {self.phone_number}')
         if self.rating:
-            info.append(f'Рейтинг: {self.rating.calculate_rating()}')
+            info.append(f'Рейтинг: {round(self.rating.calculate_rating(), 2)}')
 
         return '\n'.join(info)

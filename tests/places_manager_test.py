@@ -36,7 +36,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 0, 100)),
+                                Rating(0, 0, 0, 0, 0, 100)),
                           Place(1,
                                 'KFC',
                                 Type.type_restaurant,
@@ -45,7 +45,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 5, 100)),
+                                Rating(1, 0, 0, 0, 5, 100)),
                           Place(2,
                                 'KFC',
                                 Type.type_restaurant,
@@ -54,7 +54,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 4, 100)),
+                                Rating(2, 0, 0, 0, 4, 100)),
                           Place(3,
                                 'KFC',
                                 Type.type_restaurant,
@@ -63,7 +63,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 3, 100)),
+                                Rating(3, 0, 0, 0, 3, 100)),
                           Place(4,
                                 'KFC',
                                 Type.type_restaurant,
@@ -72,7 +72,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 2, 100)),
+                                Rating(4, 0, 0, 0, 2, 100)),
                           Place(5,
                                 'KFC',
                                 Type.type_restaurant,
@@ -81,7 +81,7 @@ class PlacesManagerTest(unittest.TestCase):
                                 'https://kfc.ru',
                                 'С 9:00 до 21:00',
                                 None,
-                                Rating(0, 0, 0, 0, 0, 1, 100))
+                                Rating(5, 0, 0, 0, 1, 100))
                           ]
 
         self.places_manager.places = places_example
