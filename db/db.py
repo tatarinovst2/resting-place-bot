@@ -82,7 +82,8 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place was visited in database
         """
-        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+        should_create_object = False  # workaround for "the connection cannot be
+        # re-entered recursively"
 
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
@@ -98,7 +99,8 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place was not visited in database
         """
-        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+        should_create_object = False  # workaround for "the connection cannot be
+        # re-entered recursively"
 
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
@@ -114,7 +116,8 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place is favourite in database
         """
-        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+        should_create_object = False  # workaround for "the connection cannot be
+        # re-entered recursively"
 
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
@@ -130,7 +133,8 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place is not favourite in database
         """
-        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+        should_create_object = False  # workaround for "the connection cannot
+        # be re-entered recursively"
 
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
