@@ -136,6 +136,9 @@ class PlaceCreationCheck(unittest.TestCase):
             self.assertEqual(type(exception), InsufficientPlaceInfoError)
 
     def test_find_matches_correct(self):
+        """
+        Tests if matches are found in case the place is full
+        """
         place = self.return_correct_place()
 
         actual = place.find_matches(['ресторан', 'юла', 'на', 'октябрьский'])["match_count"]
@@ -143,6 +146,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertGreaterEqual(actual, expected)
 
     def test_find_matches_not_full(self):
+        """
+        Tests if matches are found in case the place is not full
+        """
         place = self.return_not_full_place()
 
         actual = place.find_matches(['ресторан', 'юла', 'на', 'октябрьский'])["match_count"]
@@ -150,6 +156,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertGreaterEqual(actual, expected)
 
     def test_find_matches_incorrect(self):
+        """
+        Tests if matches are not found in case the search query does not match the place
+        """
         place = self.return_correct_place()
 
         actual = place.find_matches(['кафе', 'кфс', 'на', 'ленина'])["match_count"]
@@ -157,6 +166,9 @@ class PlaceCreationCheck(unittest.TestCase):
         self.assertEqual(actual, expected)
 
     def return_correct_place(self):
+        """
+        Create a correct place
+        """
         place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],
@@ -169,6 +181,9 @@ class PlaceCreationCheck(unittest.TestCase):
         return place
 
     def return_not_full_place(self):
+        """
+        Creates a place that is not full
+        """
         place = Place(place_id=self.correct_arguments[0],
                       name=self.correct_arguments[1],
                       place_type=self.correct_arguments[2],

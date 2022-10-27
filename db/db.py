@@ -13,9 +13,9 @@ class MetaSingleton(type):
     """
     _instances = {}
 
-    def call(cls) -> dict:
+    def __call__(cls) -> dict:
         if cls not in cls._instances:
-            cls._instances[cls] = super(MetaSingleton, cls).call()
+            cls._instances[cls] = super(MetaSingleton, cls).__call__()
         return cls._instances[cls]
 
 
@@ -82,9 +82,15 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place was visited in database
         """
+        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
+            should_create_object = True
+
+        if should_create_object:
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
+
         self.execute(f'UPDATE visited SET is_visited = TRUE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
@@ -92,9 +98,15 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place was not visited in database
         """
+        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
+            should_create_object = True
+
+        if should_create_object:
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
+
         self.execute(f'UPDATE visited SET is_visited = FALSE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
@@ -102,9 +114,15 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place is favourite in database
         """
+        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
+            should_create_object = True
+
+        if should_create_object:
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
+
         self.execute(f'UPDATE favorite SET is_in_favorite = TRUE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
@@ -112,9 +130,15 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that place is not favourite in database
         """
+        should_create_object = False  # workaround for "the connection cannot be re-entered recursively"
+
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
+            should_create_object = True
+
+        if should_create_object:
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
+
         self.execute(f'UPDATE favorite SET is_in_favorite = FALSE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
@@ -122,10 +146,11 @@ class Database(metaclass=MetaSingleton):
         """
         Marks that the place is rated by the user
         """
-        if not self.select(f'SELECT place_id FROM ratedByUser WHERE place_id = {place_id} '
-                           f'AND user_id = {user_id}'):
-            self.execute(f'INSERT INTO ratedByUser (place_id, user_id) VALUES ({place_id}, '
-                         f'{user_id})')
+        if self.select(f'SELECT place_id FROM ratedByUser WHERE place_id = {place_id} '
+                       f'AND user_id = {user_id}'):
+            return
+        self.execute(f'INSERT INTO ratedByUser (place_id, user_id) VALUES ({place_id}, '
+                     f'{user_id})')
 
     def __del__(self):
         if self.connection is not None:
