@@ -46,7 +46,7 @@ class RestingPlaceBot:
                     'cb_rm_visited' in call.data or 'cb_add_visited' in call.data:
                 self.handle_user_place_info_callback_query(call)
             elif 'cb_stars' in call.data:
-                self.handle_settings_stars(call)
+                self.handle_setting_stars(call)
             elif "cb_get_more_for_search" in call.data:
                 data = call.data.split(', ')
                 self.find_place(message_text=data[1],
@@ -102,7 +102,7 @@ class RestingPlaceBot:
             else:
                 self.find_place(message.text, message.chat.id, 0)
 
-    def handle_settings_stars(self, call) -> None:
+    def handle_setting_stars(self, call) -> None:
         """
         Contains actions linked to setting ratings
         """
@@ -277,7 +277,7 @@ class RestingPlaceBot:
     @staticmethod
     def to_start_markup() -> ReplyKeyboardMarkup:
         """
-        Provides To start reply
+        Provides to start reply
         """
         markup = ReplyKeyboardMarkup(True, False)
         markup.add("В начало")

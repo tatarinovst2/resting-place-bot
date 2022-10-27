@@ -34,6 +34,7 @@ Software solution is built on top of three components:
 | `find_place`                      | sends search results for a particular search query                     | `message_text (str)`: message's text </br> `start_index (int)`: index from which top results are shown </br>, `user_id`: user's identifier                                             |`None`|
 | `send_message`                    | sends a message and stores it in message history for testing purposes  | `chat_id (int)`: chat's identifier </br> `text (str)`: message text </br> `reply_markup (func)`: markup that allows to create inline buttons                                           |`None`|
 | `start_markup`                    | provides inline buttons for the start message                          |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
+| `to_start_markup`                 | provides to start reply                                                |                                                                                                                                                                                        |`ReplyKeyboardMarkup`|
 | `categories_markup`               | provides inline buttons for categories                                 |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
 | `food_markup`                     | provides inline buttons for 'food' category                            |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
 | `museum_and_theater_markup`       | provides inline buttons for 'museum and theater' category              |                                                                                                                                                                                        |`InlineKeyboardMarkup`|
@@ -44,6 +45,10 @@ Software solution is built on top of three components:
 | `place_markup`                    | provides inline buttons for actions that could be performed on places  | `place_id (int)`: place's identifier, `was_visited`: a boolean that represents whether the place was visited, `is_favourite`: a boolean that represents whether the place is favourite |`InlineKeyboardMarkup`|
 | `find_favourite_places`           | finds and prints favourite places                                      | `call`: callback query, is used to identify the messages' origins                                                                                                                      |`None`|
 | `find_visited_places`             | finds and prints visited or not visited places                         | `call`: callback query, is used to identify the messages' origins, `was_visited`: a boolean that represents whether the place was visited                                              |`None`|
+| `handle_setting_stars`            | contains actions linked to setting ratings                             | `call`: callback query, is used to identify the messages' origins                                                                                                                      |`None`|
+| `handle_user_place_info_callback_query`| contains actions linked to UserPlaceInfo                          |`call`: callback query, is used to identify the messages' origins                                                                                                                       |`None`|
+| `handle_categories_callback_query`| contains actions linked to types                                       |`call`: callback query, is used to identify the messages' origins                                                                                                                       |`None`|
+
 
 ### Сlass [`PlacesManager`](https://github.com/tatarinovst2/resting-place-bot/blob/main/places_manager.py)
 #### Description: class used to load and store places. 
@@ -81,6 +86,7 @@ Software solution is built on top of three components:
 |`remove_from_visited`|marks that place was not visited in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
 |`add_to_favorite`|marks that place is favourite in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
 |`remove_from_favorite`|marks that place is not favourite in database|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
+|`set_as_rated`|marks that the place is rated by the user|`place_id (int)`: place's identifier </br> `user_id (int)`: user's identifier|`None`|
 
 ### Class [`Place`](https://github.com/tatarinovst2/resting-place-bot/blob/main/place.py)
 #### Description: a class that represents a particular place and holds information about it. 
@@ -90,12 +96,7 @@ Software solution is built on top of three components:
 |`id (int)`| place's identifier|
 |`name (str)`| place's name|
 |`type (str)`| place's type|
-|`average_price (str or None)`| place's average check|
-|`address (str or None)`| place's address|
-|`webpage (str or None)`| place's webpage|
-|`working_hours (str or None)`| place's working hours|
-|`phone_number (str or None)`| place's phone number|
-|`rating (Rating or None)`| an object that holds information about place's rating|
+|`extra_data (dict)`| a dictionary that holds optional arguments: _average_price_, _address_, _working_hours_, _phone_number_, _rating_|
 |`user_place_infos (dict)`| a dictionary that holds objects that contain information about whether place is favourite or not and whether the place was visited or not|
 
 #### Methods 
@@ -103,15 +104,15 @@ Software solution is built on top of three components:
 |---|---|---|---|
 |`find_matches`| returns a number representing how the place's information matches the search query|`lemmas (list)`: a list of lemmatized words that were used for search| `float`|
 |`get_info`| returns a string that holds information about the place| |`string`|
-|`is_favourite`| returns a boolean that presents whether the place if favourite for a particular user|`user_id (int)`: user's identifier|`Bool`|
-|`was_visited`| returns a boolean that presents whether the place was visited for a particular user|`user_id (int)`: user's identifier|`Bool`|
+|`is_favourite`| returns a boolean that represents whether the place is favourite for a particular user|`user_id (int)`: user's identifier|`Bool`|
+|`was_visited`| returns a boolean that represents whether the place was visited by particular user|`user_id (int)`: user's identifier|`Bool`|
+|`was_rated`|returns a boolean that represents whether the place was rated by particular user|`user_id (int)`: user's identifier|`Bool`|
 
 ### Class [`Rating`](https://github.com/tatarinovst2/resting-place-bot/blob/main/rating.py)
 #### Description: a class that holds information about the marks of the place.
 #### Fields 
 |Field|Description|
 |---|---|
-|`rating_id (int)`| rating's identifier|
 |`places_id (int)`| place's identifier|
 |`one_stars (int)`| amount of one star marks|
 |`two_stars (int)`| amount of two stars marks|
@@ -128,19 +129,18 @@ Software solution is built on top of three components:
 #### Description: a class that holds information whether the place was visited or is favourite for a particular user. 
 |Field|Description|
 |---|---|
-|`place_id(int)`| a class that represents a particular place and holds information about it|
-|`user_id(int)`| match count for the search query|
-|`was_visited(bool)`| a boolean that represents whether the place was visited|
-|`is_favourite(bool)`|a boolean that represents whether the place is favourite|
-
-### Class [`SearchResult`](https://github.com/tatarinovst2/resting-place-bot/blob/main/search_result.py)
-#### Description: a class that holds the place and its match count for search query.
-|Field|Description|
-|---|---|
-|`place (Place)`| a class that represents a particular place and holds information about it|
-|`match_amount (float)`| match count for the search query|
+|`place_id (int)`| a class that represents a particular place and holds information about it|
+|`user_id (int)`| match count for the search query|
+|`was_visited (bool)`| a boolean that represents whether the place was visited|
+|`is_favourite (bool)`|a boolean that represents whether the place is favourite|
+|`was_rated (bool)`|a boolean that represents whether the place was rated|
 
 ### Class [`Type`](https://github.com/tatarinovst2/resting-place-bot/blob/main/type.py)
 #### Description: a class that holds places' types _restaurant_, _cafe_, _bar_, _theater_, _museum_, _cinema_, _festival_, _concert_.
+
+### Class [`InsufficientPlaceInfoError`](https://github.com/tatarinovst2/resting-place-bot/blob/main/exceptions.py)
+#### Description: a class that holds exception raised when there is not enough information for place to be meaningful. 
+
+    
 
 
