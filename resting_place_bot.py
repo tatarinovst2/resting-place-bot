@@ -5,7 +5,7 @@ import re
 
 from pymystem3 import Mystem
 from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, Message
 
 from places_manager import PlacesManager
 from type import Type
@@ -17,20 +17,20 @@ class RestingPlaceBot:
     Interface for bot initialization
     """
     def __init__(self):
-        self.bot = TeleBot(token=TOKEN, threaded=False)
+        self.bot = TeleBot(token=TOKEN, threaded=True)
         self.places_manager = PlacesManager()
 
         self.messages_history = []
 
         @self.bot.callback_query_handler(func=lambda call: True)
-        def handle_callback_query(call):
+        def handle_callback_query(call) -> None:
             """
             Contains actions executed as a result of buttons having been pressed
             """
             if call.data in ('cb_categories', 'cb_food', 'cb_museums_and_theaters',
                              'cb_festivals_and_concerts'):
                 self.handle_categories_callback_query(call)
-            if call.data == "cb_search":
+            elif call.data == "cb_search":
                 self.bot.send_message(call.message.chat.id, 'Напишите поисковой запрос')
             elif call.data == 'cb_favourites':
                 self.find_favourite_places(call)
@@ -77,7 +77,7 @@ class RestingPlaceBot:
                                           start_index=int(data[1]) + 5))
 
         @self.bot.message_handler(commands=['start'])
-        def handle_start_message(message):
+        def handle_start_message(message) -> None:
             """
             Sends start message to a command /start
             """
@@ -86,14 +86,14 @@ class RestingPlaceBot:
             self.send_message(message.chat.id, "Выберите опцию:", reply_markup=self.start_markup())
 
         @self.bot.message_handler(commands=['stop'])
-        def handle_end_message(message):
+        def handle_end_message(message) -> None:
             """
             Sends end message to a command /stop
             """
             self.send_message(message.chat.id, 'До свидания! Хорошего дня!')
 
         @self.bot.message_handler(content_types=['text'])
-        def handle_text(message):
+        def handle_text(message) -> None:
             """
             Handles text input to find and print searched places
             """
@@ -102,7 +102,7 @@ class RestingPlaceBot:
             else:
                 self.find_place(message.text, message.chat.id, 0)
 
-    def handle_settings_stars(self, call):
+    def handle_settings_stars(self, call) -> None:
         """
         Contains actions linked to setting ratings
         """
@@ -124,7 +124,7 @@ class RestingPlaceBot:
         self.send_message(call.message.chat.id,
                           'Спасибо за вашу оценку! Ваше мнение очень важно для нас!')
 
-    def handle_user_place_info_callback_query(self, call):
+    def handle_user_place_info_callback_query(self, call) -> None:
         """
         Contains actions linked to UserPlaceInfo
         """
@@ -153,7 +153,7 @@ class RestingPlaceBot:
             self.places_manager.scan_database_user_place_infos()
             self.send_message(call.message.chat.id, 'Место добавлено в посещенные.')
 
-    def handle_categories_callback_query(self, call):
+    def handle_categories_callback_query(self, call) -> None:
         """
         Contains actions linked to types
         """
@@ -170,7 +170,7 @@ class RestingPlaceBot:
             self.send_message(call.message.chat.id, 'Выберите подкатегорию',
                               reply_markup=self.festival_and_concert_markup())
 
-    def find_place(self, message_text: str, chat_id: int, start_index: int):
+    def find_place(self, message_text: str, chat_id: int, start_index: int) -> None:
         """
         Sends search results for a particular search query
         """
@@ -178,19 +178,19 @@ class RestingPlaceBot:
         lemmas = mystem_for_bot.lemmatize(message_text)
         matches = []
         for place in self.places_manager.places:
-            search_result = place.find_matches(lemmas)
-            if search_result.match_amount > 0.0:
-                matches.append(search_result)
-        sorted_matches = sorted(matches, key=lambda x: x.match_amount, reverse=True)[
+            search_result_dict = place.find_matches(lemmas)
+            if search_result_dict["match_count"] > 0.0:
+                matches.append(search_result_dict)
+        sorted_matches = sorted(matches, key=lambda x: x["match_count"], reverse=True)[
                          start_index:start_index + 5]
-        if sorted_matches[0].match_amount == 0:
+        if sorted_matches[0]["match_count"] == 0.0:
             self.send_message(chat_id, 'Совпадения отсутствуют.')
         else:
             places_found = []
             for match in sorted_matches:
-                if match.match_amount == 0.0:
+                if match["match_count"] == 0.0:
                     break
-                places_found.append(match.place)
+                places_found.append(match["place"])
             for place in places_found:
                 self.send_message(chat_id, place.get_info(user_id=chat_id),
                                   reply_markup=self.place_markup(place_id=place.place_id,
@@ -207,7 +207,7 @@ class RestingPlaceBot:
                                       start_index=start_index + 5,
                                       user_id=chat_id))
 
-    def find_favourite_places(self, call):
+    def find_favourite_places(self, call) -> None:
         """
         Finds and prints favourite places
         """
@@ -231,7 +231,7 @@ class RestingPlaceBot:
                                                                  user_id=call.message.chat.id
                                                              )))
 
-    def find_visited_places(self, call, was_visited: bool):
+    def find_visited_places(self, call, was_visited: bool) -> None:
         """
         Finds and prints visited or not visited places
         """
@@ -252,7 +252,7 @@ class RestingPlaceBot:
                 is_favourite=visited_place.is_favourite(user_id=call.message.chat.id),
                 was_rated=visited_place.was_rated(user_id=call.message.chat.id)))
 
-    def send_message(self, chat_id: int, text: str, reply_markup=None):
+    def send_message(self, chat_id: int, text: str, reply_markup=None) -> Message:
         """
         Sends a message and stores it in message history for testing purposes
         """
@@ -262,7 +262,7 @@ class RestingPlaceBot:
         return message
 
     @staticmethod
-    def start_markup():
+    def start_markup() -> InlineKeyboardMarkup:
         """
         Provides inline buttons for the start message
         """
@@ -275,7 +275,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def to_start_markup():
+    def to_start_markup() -> ReplyKeyboardMarkup:
         """
         Provides To start reply
         """
@@ -284,7 +284,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def categories_markup():
+    def categories_markup() -> InlineKeyboardMarkup:
         """
         Provides inline buttons for categories
         """
@@ -297,7 +297,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def food_markup():
+    def food_markup() -> InlineKeyboardMarkup:
         """
         Provides inline buttons for 'food' category
         """
@@ -308,7 +308,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def museum_and_theater_markup():
+    def museum_and_theater_markup() -> InlineKeyboardMarkup:
         """
         Provides inline buttons for 'museum and theater' category
         """
@@ -318,7 +318,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def festival_and_concert_markup():
+    def festival_and_concert_markup() -> InlineKeyboardMarkup:
         """
         Provides inline buttons for 'festival and concert' category
         """
@@ -328,7 +328,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def get_more_information(place_type: str, start_index: int):
+    def get_more_information(place_type: str, start_index: int) -> InlineKeyboardMarkup:
         """
         Provides inline button that allows to show more results
         """
@@ -338,7 +338,8 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def get_more_information_for_search(message_text: str, start_index: int, user_id: int):
+    def get_more_information_for_search(
+            message_text: str, start_index: int, user_id: int) -> InlineKeyboardMarkup:
         """
         provides inline button that allows to show more results when searching
         """
@@ -349,7 +350,8 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def place_markup(place_id: int, was_visited: bool, is_favourite: bool, was_rated: bool):
+    def place_markup(place_id: int, was_visited: bool,
+                     is_favourite: bool, was_rated: bool) -> InlineKeyboardMarkup:
         """
         Provides inline buttons for actions that could be performed on places
         """
@@ -375,7 +377,7 @@ class RestingPlaceBot:
         return markup
 
     @staticmethod
-    def create_buttons(place_id: int):
+    def create_buttons(place_id: int) -> InlineKeyboardMarkup:
         """
         Provides inline buttons with ratings options
         """

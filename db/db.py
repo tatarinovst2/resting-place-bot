@@ -7,13 +7,25 @@ from psycopg2.extras import DictCursor
 from config.config import NAME, USER, PASSWORD, HOST, PORT
 
 
-class Database:
+class MetaSingleton(type):
     """
-    Allows connecting to the database
+    A metaclass for implementing the singleton pattern
+    """
+    _instances = {}
+
+    def call(cls) -> dict:
+        if cls not in cls._instances:
+            cls._instances[cls] = super(MetaSingleton, cls).call()
+        return cls._instances[cls]
+
+
+class Database(metaclass=MetaSingleton):
+    """
+    Allows connecting to the database (is a singleton)
     """
     connection = None
 
-    def connect(self):
+    def connect(self) -> connection:
         """
         Creates the connection to the SQL-database
         """
@@ -26,7 +38,7 @@ class Database:
 
         return self.connection
 
-    def select(self, query: str):
+    def select(self, query: str) -> list:
         """
         Method to execute selection queries
         """
@@ -37,7 +49,7 @@ class Database:
 
         return res
 
-    def execute(self, query: str):
+    def execute(self, query: str) -> None:
         """
         Method to execute queries other than selection
         """
@@ -45,7 +57,7 @@ class Database:
             with conn.cursor(cursor_factory=DictCursor) as cursor:
                 cursor.execute(query, None)
 
-    def add_grade(self, place_id: int, grade: int):
+    def add_grade(self, place_id: int, grade: int) -> None:
         """
         Updates ratings with a particular grade
         """
@@ -66,47 +78,47 @@ class Database:
             self.execute(f'INSERT INTO ratings (place_id) VALUES ({place_id})')
         self.execute(f'UPDATE ratings SET {col_name} = {col_name} + 1 WHERE place_id = {place_id}')
 
-    def add_to_visited(self, place_id: int, user_id: int):
+    def add_to_visited(self, place_id: int, user_id: int) -> None:
         """
         Marks that place was visited in database
         """
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
-        self.execute(f'UPDATE visited SET is_visited = 1 WHERE place_id = {place_id} '
+        self.execute(f'UPDATE visited SET is_visited = TRUE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
-    def remove_from_visited(self, place_id: int, user_id: int):
+    def remove_from_visited(self, place_id: int, user_id: int) -> None:
         """
         Marks that place was not visited in database
         """
         if not self.select(f'SELECT place_id FROM visited WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
             self.execute(f'INSERT INTO visited (place_id, user_id) VALUES ({place_id}, {user_id})')
-        self.execute(f'UPDATE visited SET is_visited = 0 WHERE place_id = {place_id} '
+        self.execute(f'UPDATE visited SET is_visited = FALSE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
-    def add_to_favorite(self, place_id: int, user_id: int):
+    def add_to_favorite(self, place_id: int, user_id: int) -> None:
         """
         Marks that place is favourite in database
         """
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
-        self.execute(f'UPDATE favorite SET is_in_favorite = 1 WHERE place_id = {place_id} '
+        self.execute(f'UPDATE favorite SET is_in_favorite = TRUE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
-    def remove_from_favorite(self, place_id: int, user_id: int):
+    def remove_from_favorite(self, place_id: int, user_id: int) -> None:
         """
         Marks that place is not favourite in database
         """
         if not self.select(f'SELECT place_id FROM favorite WHERE place_id = {place_id} '
                            f'AND user_id = {user_id}'):
             self.execute(f'INSERT INTO favorite (place_id, user_id) VALUES ({place_id}, {user_id})')
-        self.execute(f'UPDATE favorite SET is_in_favorite = 0 WHERE place_id = {place_id} '
+        self.execute(f'UPDATE favorite SET is_in_favorite = FALSE WHERE place_id = {place_id} '
                      f'AND user_id = {user_id}')
 
-    def set_as_rated(self, place_id: int, user_id: int):
+    def set_as_rated(self, place_id: int, user_id: int) -> None:
         """
         Marks that the place is rated by the user
         """

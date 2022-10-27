@@ -17,7 +17,7 @@ class PlacesManager:
         self.database = None
         self.scan_database()
 
-    def scan_database_place(self):
+    def scan_database_place(self) -> None:
         """
         Scans the database for places and loads them into self.places
         """
@@ -29,11 +29,12 @@ class PlacesManager:
         data = self.database.select(scan_query)
 
         for place_data in data:
-            self.places.append(Place(place_data[0], place_data[1], place_data[2], place_data[3],
-                                     place_data[4], place_data[5], place_data[6], place_data[7],
-                                     None))
+            self.places.append(Place(place_data[0], place_data[1], place_data[2],
+                                     average_price=place_data[3], address=place_data[4],
+                                     webpage=place_data[5], working_hours=place_data[6],
+                                     phone_number=place_data[7], rating=None))
 
-    def scan_database_ratings(self):
+    def scan_database_ratings(self) -> None:
         """
         Scans the database for ratings and adds them to places
         """
@@ -45,9 +46,9 @@ class PlacesManager:
                             place_data[4], place_data[5], place_data[6])
             for new_place in self.places:
                 if new_place.place_id == rating.place_id:
-                    new_place.rating = rating
+                    new_place.extra_data["rating"] = rating
 
-    def scan_database_user_place_infos(self):
+    def scan_database_user_place_infos(self) -> None:
         """
         Scans the database for favorite and visited places
         """
@@ -106,7 +107,7 @@ class PlacesManager:
                 if place.place_id == user_place_info.place_id:
                     place.user_place_infos[user_place_info.user_id] = user_place_info
 
-    def scan_database(self):
+    def scan_database(self) -> None:
         """
         Scans the whole database by calling scan_database_place(), scan_database_ratings() and
         scan_database_user_place_infos()
@@ -115,13 +116,16 @@ class PlacesManager:
         self.scan_database_ratings()
         self.scan_database_user_place_infos()
 
-    def return_top_places(self, place_type: str, start_index: int, amount: int):
+    def return_top_places(
+            self, place_type: str, start_index: int, amount: int) -> tuple[list[Place], int]:
         """
         Returns list of places with the highest ratings of a given type and amount of all places
         of the given type
         """
         places_with_type = [place for place in self.places if place.type == place_type]
-        places_with_type.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        places_with_type.sort(
+            key=lambda x: -x.extra_data.get(
+                "rating").calculate_rating() if x.extra_data.get("rating", False) else 0.0)
         result = []
         for place in places_with_type[start_index:start_index+amount]:
             result.append(place)

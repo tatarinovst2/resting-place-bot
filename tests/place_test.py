@@ -30,25 +30,17 @@ class PlaceCreationCheck(unittest.TestCase):
         """
         Simple test for correct initialization.
         """
-        place = Place(place_id=self.correct_arguments[0],
-                      name=self.correct_arguments[1],
-                      place_type=self.correct_arguments[2],
-                      average_price=self.correct_arguments[3],
-                      address=self.correct_arguments[4],
-                      webpage=self.correct_arguments[5],
-                      working_hours=self.correct_arguments[6],
-                      phone_number=self.correct_arguments[7],
-                      rating=self.correct_arguments[8])
+        place = self.return_correct_place()
 
         self.assertEqual(place.place_id, self.correct_arguments[0])
         self.assertEqual(place.name, self.correct_arguments[1])
         self.assertEqual(place.type, self.correct_arguments[2])
-        self.assertEqual(place.average_price, self.correct_arguments[3])
-        self.assertEqual(place.address, self.correct_arguments[4])
-        self.assertEqual(place.webpage, self.correct_arguments[5])
-        self.assertEqual(place.working_hours, self.correct_arguments[6])
-        self.assertEqual(place.phone_number, self.correct_arguments[7])
-        self.assertEqual(place.rating, self.correct_arguments[8])
+        self.assertEqual(place.extra_data.get("average_price", None), self.correct_arguments[3])
+        self.assertEqual(place.extra_data.get("address", None), self.correct_arguments[4])
+        self.assertEqual(place.extra_data.get("webpage", None), self.correct_arguments[5])
+        self.assertEqual(place.extra_data.get("working_hours", None), self.correct_arguments[6])
+        self.assertEqual(place.extra_data.get("phone_number", None), self.correct_arguments[7])
+        self.assertEqual(place.extra_data.get("rating", None), self.correct_arguments[8])
 
     def test_create_place_incorrect(self):
         """
@@ -70,51 +62,36 @@ class PlaceCreationCheck(unittest.TestCase):
                 self.assertEqual(type(place.place_id), int)
                 self.assertEqual(type(place.name), str)
                 self.assertEqual(type(place.type), str)
-                self.assertEqual(type(place.address), str)
-                self.assertEqual(type(place.webpage), str)
-                self.assertEqual(type(place.working_hours), str)
-                self.assertEqual(type(place.average_price), str)
-                self.assertEqual(type(place.rating), Rating)
+                self.assertEqual(type(place.extra_data.get("average_price", None)), str)
+                self.assertEqual(type(place.extra_data.get("address", None)), str)
+                self.assertEqual(type(place.extra_data.get("webpage", None)), str)
+                self.assertEqual(type(place.extra_data.get("working_hours", None)), str)
+                self.assertEqual(type(place.extra_data.get("phone_number", None)), str)
+                self.assertEqual(type(place.extra_data.get("rating", None)), Rating)
         except Exception as exception:  # pylint: disable=broad-except
             self.assertEqual(type(exception), TypeError)
 
-    def test_create_place_minimum(self):
+    def test_create_place_not_full(self):
         """
         Test for creating places with minimal info.
         """
-        place = Place(place_id=self.correct_arguments[0],
-                      name=self.correct_arguments[1],
-                      place_type=self.correct_arguments[2],
-                      average_price=None,
-                      address=None,
-                      webpage=None,
-                      working_hours=None,
-                      phone_number=None,
-                      rating=None)
+        place = self.return_not_full_place()
 
         self.assertEqual(place.place_id, self.correct_arguments[0])
         self.assertEqual(place.name, self.correct_arguments[1])
         self.assertEqual(place.type, self.correct_arguments[2])
-        self.assertEqual(place.average_price, None)
-        self.assertEqual(place.address, None)
-        self.assertEqual(place.webpage, None)
-        self.assertEqual(place.working_hours, None)
-        self.assertEqual(place.phone_number, None)
-        self.assertEqual(place.rating, None)
+        self.assertEqual(place.extra_data.get("average_price", None), None)
+        self.assertEqual(place.extra_data.get("address", None), None)
+        self.assertEqual(place.extra_data.get("webpage", None), None)
+        self.assertEqual(place.extra_data.get("working_hours", None), None)
+        self.assertEqual(place.extra_data.get("phone_number", None), None)
+        self.assertEqual(place.extra_data.get("rating", None), None)
 
     def test_get_info(self):
         """
         Tests if place's information is output correctly
         """
-        place = Place(place_id=self.correct_arguments[0],
-                      name=self.correct_arguments[1],
-                      place_type=self.correct_arguments[2],
-                      average_price=self.correct_arguments[3],
-                      address=self.correct_arguments[4],
-                      webpage=self.correct_arguments[5],
-                      working_hours=self.correct_arguments[6],
-                      phone_number=self.correct_arguments[7],
-                      rating=self.correct_arguments[8])
+        place = self.return_correct_place()
 
         expected = f'Название: {self.correct_arguments[1]}\n' \
                    f'Тип заведения: {self.correct_arguments[2]}\n' \
@@ -132,15 +109,7 @@ class PlaceCreationCheck(unittest.TestCase):
         """
         Tests if places can be initialized with only some parameters
         """
-        place = Place(place_id=self.correct_arguments[0],
-                      name=self.correct_arguments[1],
-                      place_type=self.correct_arguments[2],
-                      average_price=None,
-                      address=None,
-                      webpage=None,
-                      working_hours=None,
-                      phone_number=None,
-                      rating=None)
+        place = self.return_not_full_place()
 
         expected = f'Название: {self.correct_arguments[1]}\n' \
                    f'Тип заведения: {self.correct_arguments[2]}'
@@ -165,6 +134,51 @@ class PlaceCreationCheck(unittest.TestCase):
             assert False, "Info about place is lacking!"
         except Exception as exception:  # pylint: disable=broad-except
             self.assertEqual(type(exception), InsufficientPlaceInfoError)
+
+    def test_find_matches_correct(self):
+        place = self.return_correct_place()
+
+        actual = place.find_matches(['ресторан', 'юла', 'на', 'октябрьский'])["match_count"]
+        expected = 2.5
+        self.assertGreaterEqual(actual, expected)
+
+    def test_find_matches_not_full(self):
+        place = self.return_not_full_place()
+
+        actual = place.find_matches(['ресторан', 'юла', 'на', 'октябрьский'])["match_count"]
+        expected = 2.0
+        self.assertGreaterEqual(actual, expected)
+
+    def test_find_matches_incorrect(self):
+        place = self.return_correct_place()
+
+        actual = place.find_matches(['кафе', 'кфс', 'на', 'ленина'])["match_count"]
+        expected = 0.0
+        self.assertEqual(actual, expected)
+
+    def return_correct_place(self):
+        place = Place(place_id=self.correct_arguments[0],
+                      name=self.correct_arguments[1],
+                      place_type=self.correct_arguments[2],
+                      average_price=self.correct_arguments[3],
+                      address=self.correct_arguments[4],
+                      webpage=self.correct_arguments[5],
+                      working_hours=self.correct_arguments[6],
+                      phone_number=self.correct_arguments[7],
+                      rating=self.correct_arguments[8])
+        return place
+
+    def return_not_full_place(self):
+        place = Place(place_id=self.correct_arguments[0],
+                      name=self.correct_arguments[1],
+                      place_type=self.correct_arguments[2],
+                      average_price=None,
+                      address=None,
+                      webpage=None,
+                      working_hours=None,
+                      phone_number=None,
+                      rating=None)
+        return place
 
 
 if __name__ == '__main__':
