@@ -22,11 +22,11 @@ class BotTest(unittest.TestCase):
             "phone_number)"
             " VALUES (1000, '1000','Ресторан',NULL,NULL,NULL,NULL,NULL);")
         self.bot.places_manager.places.append(Place(1000, '1000', Type.type_restaurant,
-                                                    average_price=None,
-                                                    address=None,
-                                                    webpage=None,
-                                                    working_hours=None,
-                                                    phone_number=None,
+                                                    average_price='466',
+                                                    address='Заречная',
+                                                    webpage='https://1000.com',
+                                                    working_hours='08:00-20:00',
+                                                    phone_number='+7 999 999-99-99',
                                                     rating=None))
 
     def test_message_handler(self):
