@@ -3,7 +3,7 @@ Module for bot abstraction to create buttons and send messages
 """
 import re
 
-from pymystem3 import Mystem
+from pymorphy2 import MorphAnalyzer
 from telebot import TeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, Message
 
@@ -34,10 +34,16 @@ class RestingPlaceBot:
                 self.bot.send_message(call.message.chat.id, 'Напишите поисковой запрос')
             elif call.data == 'cb_favourites':
                 self.find_favourite_places(call)
-            elif call.data == 'cb_visited':
-                self.find_visited_places(call, was_visited=True)
-            elif call.data == 'cb_unvisited':
-                self.find_visited_places(call, was_visited=False)
+            elif 'cb_visited' in call.data:
+                data = call.data.split(', ')
+                self.find_visited_places(call, was_visited=True,
+                                         chat_id=call.message.chat.id,
+                                         start_index=int(data[1]))
+            elif 'cb_unvisited' in call.data:
+                data = call.data.split(', ')
+                self.find_visited_places(call, was_visited=False,
+                                         chat_id=call.message.chat.id,
+                                         start_index=int(data[1]))
             elif 'cb_rate_the_place' in call.data:
                 self.send_message(call.message.chat.id, 'Выберите необходимую оценку',
                                   reply_markup=self.create_buttons(
@@ -174,8 +180,8 @@ class RestingPlaceBot:
         """
         Sends search results for a particular search query
         """
-        mystem_for_bot = Mystem()
-        lemmas = mystem_for_bot.lemmatize(message_text)
+        morph = MorphAnalyzer()
+        lemmas = [morph.parse(word)[0].normal_form for word in message_text.split()]
         matches = []
         for place in self.places_manager.places:
             search_result_dict = place.find_matches(lemmas)
@@ -218,7 +224,8 @@ class RestingPlaceBot:
         if not fav_places:
             self.send_message(call.message.chat.id, 'Отсутствуют избранные места',
                               reply_markup=None)
-        fav_places.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        fav_places.sort(key=lambda x: -x.extra_data["rating"].
+                        calculate_rating() if x.extra_data["rating"] else 0.0)
         for fav_place in fav_places:
             self.send_message(call.message.chat.id, fav_place.get_info(
                 user_id=call.message.chat.id),
@@ -231,7 +238,7 @@ class RestingPlaceBot:
                                                                  user_id=call.message.chat.id
                                                              )))
 
-    def find_visited_places(self, call, was_visited: bool) -> None:
+    def find_visited_places(self, call, was_visited: bool, chat_id: int, start_index: int) -> None:
         """
         Finds and prints visited or not visited places
         """
@@ -244,7 +251,7 @@ class RestingPlaceBot:
                               reply_markup=None)
         visited_places.sort(key=lambda x: -x.extra_data["rating"].
                             calculate_rating() if x.extra_data["rating"] else 0.0)
-        for visited_place in visited_places:
+        for visited_place in visited_places[start_index: start_index + 5]:
             self.send_message(call.message.chat.id, visited_place.get_info(
                 user_id=call.message.chat.id),
                               reply_markup=self.place_markup(
@@ -252,6 +259,17 @@ class RestingPlaceBot:
                 was_visited=visited_place.was_visited(user_id=call.message.chat.id),
                 is_favourite=visited_place.is_favourite(user_id=call.message.chat.id),
                 was_rated=visited_place.was_rated(user_id=call.message.chat.id)))
+
+        data_string = 'visited'
+
+        if not was_visited:
+            data_string = 'unvisited'
+
+        if start_index + 5 < len(visited_places):
+            self.send_message(chat_id=chat_id, text='Хотите узнать еще больше мест?',
+                              reply_markup=self.get_more_information(
+                                  place_type=f'cb_{data_string}',
+                                  start_index=start_index + 5))
 
     def send_message(self, chat_id: int, text: str, reply_markup=None) -> Message:
         """
@@ -271,8 +289,8 @@ class RestingPlaceBot:
         markup.add(InlineKeyboardButton("Поиск", callback_data="cb_search"),
                    InlineKeyboardButton("Категории", callback_data="cb_categories"),
                    InlineKeyboardButton("Избранное", callback_data="cb_favourites"),
-                   InlineKeyboardButton("Посещенные места", callback_data="cb_visited"),
-                   InlineKeyboardButton("Непосещенные места", callback_data="cb_unvisited"))
+                   InlineKeyboardButton("Посещенные места", callback_data="cb_visited, 0"),
+                   InlineKeyboardButton("Непосещенные места", callback_data="cb_unvisited, 0"))
         return markup
 
     @staticmethod

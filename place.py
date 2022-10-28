@@ -3,7 +3,7 @@ Module responsible for holding information about place.
 """
 from __future__ import annotations
 
-from pymystem3 import Mystem
+from pymorphy2 import MorphAnalyzer
 
 from exceptions import InsufficientPlaceInfoError
 from rating import Rating
@@ -34,22 +34,27 @@ class Place:
         self.type = place_type
         self.extra_data = kwargs
         self.user_place_infos = {}
-        self.mystem = Mystem()
+        self.morph = MorphAnalyzer()
 
     def find_matches(self, lemmas: list) -> dict:
         """
         Returns a number representing how the place's information matches the search query
         """
+        def lemmatize(text: str) -> list:
+            return [self.morph.parse(word)[0].normal_form for word in text.split()]
+
         match_count = 0.0
         if lemmas[0].lower() in self.name.lower()[0:len(lemmas[0])]:
             match_count += 0.5
         for lemma in lemmas:
-            if lemma.lower() in self.mystem.lemmatize(self.name.lower()):
+            if not lemma or lemma.isspace():
+                continue
+            if lemma.lower() in lemmatize(self.name.lower()):
                 match_count += 1.0
-            if lemma.lower() in self.mystem.lemmatize(self.type.lower()):
+            if lemma.lower() in lemmatize(self.type.lower()):
                 match_count += 1.0
             if "address" in self.extra_data and self.extra_data["address"]:
-                if lemma.lower() in self.mystem.lemmatize(self.extra_data["address"].lower()):
+                if lemma.lower() in lemmatize(self.extra_data["address"].lower()):
                     match_count += 0.5
         return {"place": self, "match_count": match_count}
 
