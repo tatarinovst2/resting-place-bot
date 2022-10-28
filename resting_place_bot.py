@@ -17,7 +17,7 @@ class RestingPlaceBot:
     Interface for bot initialization
     """
     def __init__(self):
-        self.bot = TeleBot(token=TOKEN, threaded=True)
+        self.bot = TeleBot(token=TOKEN, threaded=False)
         self.places_manager = PlacesManager()
 
         self.messages_history = []
@@ -242,7 +242,8 @@ class RestingPlaceBot:
         if not visited_places:
             self.send_message(call.message.chat.id, 'Отсутствуют посещенные места',
                               reply_markup=None)
-        visited_places.sort(key=lambda x: -x.rating.calculate_rating() if x.rating else 0.0)
+        visited_places.sort(key=lambda x: -x.extra_data["rating"].
+                            calculate_rating() if x.extra_data["rating"] else 0.0)
         for visited_place in visited_places:
             self.send_message(call.message.chat.id, visited_place.get_info(
                 user_id=call.message.chat.id),
