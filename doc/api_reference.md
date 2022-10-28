@@ -5,7 +5,7 @@ This documentation is applicable for developers.
 |---|---|---|
 |[`pyTelegramBotAPI`](https://pypi.org/project/pyTelegramBotAPI/)  | module for working with Telegram bot  | resting_place_bot.py  |
 |[`psycopg2`](https://pypi.org/project/psycopg2/)  | module for working with database  | dp.py  |
-|[`pymystem3`](https://pypi.org/project/pymystem3/)  | module for morphological analysis |resting_place_bot.py |
+|[`pymorphy2`](https://pypi.org/project/pymorphy2/)  | module for morphological analysis |resting_place_bot.py |
 |[`pylint`](https://pypi.org/project/pylint/) | module for code analysis |
 
 
